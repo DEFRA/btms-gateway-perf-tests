@@ -1,0 +1,15 @@
+<Project>
+
+  <ItemGroup>
+    <Content Include=".dockerignore" />
+    <Content Include=".editorconfig" />
+    <Content Include=".gitignore" />
+    <Content Include="Dockerfile" />
+    <Content Include="entrypoint.sh" />
+    <Content Include="LICENCE" />
+    <Content Include="README.md" />
+    <Content Include="scenarios\test.jmx" />
+  </ItemGroup>
+
+
+</Project>
