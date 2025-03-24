@@ -3,13 +3,37 @@
   <hashTree>
     <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="btms-gateway-perf-tests Performance Tests">
       <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
-        <collectionProp name="Arguments.arguments"/>
+        <collectionProp name="Arguments.arguments">
+          <elementProp name="PROTOCOL" elementType="Argument">
+            <stringProp name="Argument.name">PROTOCOL</stringProp>
+            <stringProp name="Argument.value">${__P(Protocol,https)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="PORT" elementType="Argument">
+            <stringProp name="Argument.name">PORT</stringProp>
+            <stringProp name="Argument.value">${__P(Port,443)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="HOST" elementType="Argument">
+            <stringProp name="Argument.name">HOST</stringProp>
+            <stringProp name="Argument.value">${__P(Host,btms-gateway.perf-test.cdp-int.defra.cloud)}</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="REQPERSEC" elementType="Argument">
+            <stringProp name="Argument.name">REQPERSEC</stringProp>
+            <stringProp name="Argument.value">30</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+          <elementProp name="REQPERMIN" elementType="Argument">
+            <stringProp name="Argument.name">REQPERMIN</stringProp>
+            <stringProp name="Argument.value">3600</stringProp>
+            <stringProp name="Argument.metadata">=</stringProp>
+          </elementProp>
+        </collectionProp>
       </elementProp>
-      <boolProp name="TestPlan.functional_mode">false</boolProp>
-      <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
     </TestPlan>
     <hashTree>
-      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Thread Group 1">
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Thread Group 1" enabled="false">
         <intProp name="ThreadGroup.num_threads">25</intProp>
         <intProp name="ThreadGroup.ramp_time">0</intProp>
         <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
@@ -20,7 +44,7 @@
         </elementProp>
       </ThreadGroup>
       <hashTree>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Gateway Decision Notification">
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Gateway Decision Notification" enabled="false">
           <stringProp name="TestPlan.comments">Before running the suite, replace &apos;service-name&apos; the name/url of the service to test. $env is set to the name of th environment the test is running in.</stringProp>
           <stringProp name="HTTPSampler.domain">btms-gateway.perf-test.cdp-int.defra.cloud</stringProp>
           <stringProp name="HTTPSampler.protocol">https</stringProp>
@@ -1552,7 +1576,7 @@
           </ResponseAssertion>
           <hashTree/>
         </hashTree>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Gateway Finalize Notification Request">
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Gateway Finalize Notification Request" enabled="false">
           <stringProp name="TestPlan.comments">Before running the suite, replace &apos;service-name&apos; the name/url of the service to test. $env is set to the name of th environment the test is running in.</stringProp>
           <stringProp name="HTTPSampler.domain">btms-gateway.perf-test.cdp-int.defra.cloud</stringProp>
           <stringProp name="HTTPSampler.protocol">https</stringProp>
@@ -1601,7 +1625,7 @@
           <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
         </HTTPSamplerProxy>
         <hashTree>
-          <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Response Assertion">
+          <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Response Assertion" enabled="true">
             <collectionProp name="Asserion.test_strings">
               <stringProp name="49586">200</stringProp>
             </collectionProp>
@@ -1611,7 +1635,7 @@
             <intProp name="Assertion.test_type">1</intProp>
           </ResponseAssertion>
           <hashTree/>
-          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager">
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager" enabled="true">
             <collectionProp name="HeaderManager.headers">
               <elementProp name="" elementType="Header">
                 <stringProp name="Header.name">Content-Type</stringProp>
@@ -1621,7 +1645,7 @@
           </HeaderManager>
           <hashTree/>
         </hashTree>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Gateway Clearance Request">
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Gateway Clearance Request" enabled="false">
           <stringProp name="TestPlan.comments">Before running the suite, replace &apos;service-name&apos; the name/url of the service to test. $env is set to the name of th environment the test is running in.</stringProp>
           <stringProp name="HTTPSampler.domain">btms-gateway.perf-test.cdp-int.defra.cloud</stringProp>
           <stringProp name="HTTPSampler.protocol">https</stringProp>
@@ -3329,6 +3353,273 @@
           <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
         </HTTPSamplerProxy>
         <hashTree>
+          <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Response Assertion" enabled="true">
+            <collectionProp name="Asserion.test_strings">
+              <stringProp name="49586">200</stringProp>
+            </collectionProp>
+            <stringProp name="Assertion.custom_message"></stringProp>
+            <stringProp name="Assertion.test_field">Assertion.response_code</stringProp>
+            <boolProp name="Assertion.assume_success">false</boolProp>
+            <intProp name="Assertion.test_type">1</intProp>
+          </ResponseAssertion>
+          <hashTree/>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">Content-Type</stringProp>
+                <stringProp name="Header.value">application/soap+xml</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+        </hashTree>
+        <ConstantThroughputTimer guiclass="TestBeanGUI" testclass="ConstantThroughputTimer" testname="Constant Throughput Timer" enabled="false">
+          <doubleProp>
+            <name>throughput</name>
+            <value>2000.0</value>
+            <savedValue>0.0</savedValue>
+          </doubleProp>
+          <intProp name="calcMode">2</intProp>
+        </ConstantThroughputTimer>
+        <hashTree/>
+      </hashTree>
+      <SetupThreadGroup guiclass="SetupThreadGroupGui" testclass="SetupThreadGroup" testname="setUp Thread Group">
+        <intProp name="ThreadGroup.num_threads">1</intProp>
+        <intProp name="ThreadGroup.ramp_time">1</intProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller">
+          <stringProp name="LoopController.loops">1</stringProp>
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+        </elementProp>
+      </SetupThreadGroup>
+      <hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Clear DB">
+          <stringProp name="HTTPSampler.domain">btms-backend.perf-test.cdp-int.defra.cloud</stringProp>
+          <stringProp name="HTTPSampler.port">${PORT}</stringProp>
+          <stringProp name="HTTPSampler.protocol">${PROTOCOL}</stringProp>
+          <stringProp name="HTTPSampler.path">/mgmt/collections/drop</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.postBodyRaw">false</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
+            <collectionProp name="Arguments.arguments"/>
+          </elementProp>
+        </HTTPSamplerProxy>
+        <hashTree/>
+      </hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Clearance Request Thread">
+        <intProp name="ThreadGroup.num_threads">60</intProp>
+        <intProp name="ThreadGroup.ramp_time">0</intProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller">
+          <intProp name="LoopController.loops">-1</intProp>
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+        </elementProp>
+      </ThreadGroup>
+      <hashTree>
+        <ConstantThroughputTimer guiclass="TestBeanGUI" testclass="ConstantThroughputTimer" testname="Constant Throughput Timer">
+          <stringProp name="throughput">${REQPERMIN}</stringProp>
+          <intProp name="calcMode">2</intProp>
+        </ConstantThroughputTimer>
+        <hashTree/>
+        <CSVDataSet guiclass="TestBeanGUI" testclass="CSVDataSet" testname="CSV Data Set Config">
+          <stringProp name="delimiter">,</stringProp>
+          <stringProp name="fileEncoding"></stringProp>
+          <stringProp name="filename">./data/mrn.txt</stringProp>
+          <boolProp name="ignoreFirstLine">false</boolProp>
+          <boolProp name="quotedData">false</boolProp>
+          <boolProp name="recycle">false</boolProp>
+          <stringProp name="shareMode">shareMode.group</stringProp>
+          <boolProp name="stopThread">true</boolProp>
+          <stringProp name="variableNames">MRN</stringProp>
+        </CSVDataSet>
+        <hashTree/>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Clearance Request">
+          <stringProp name="TestPlan.comments">Before running the suite, replace &apos;service-name&apos; the name/url of the service to test. $env is set to the name of th environment the test is running in.</stringProp>
+          <stringProp name="HTTPSampler.domain">${HOST}</stringProp>
+          <stringProp name="HTTPSampler.port">${PORT}</stringProp>
+          <stringProp name="HTTPSampler.protocol">${PROTOCOL}</stringProp>
+          <stringProp name="HTTPSampler.contentEncoding">UTF8</stringProp>
+          <stringProp name="HTTPSampler.path">/ITSW/CDS/SubmitImportDocumentCDSFacadeService</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;&#xd;
+&lt;soap:Envelope xmlns:soap=&quot;http://www.w3.org/2003/05/soap-envelope&quot; xmlns:oas=&quot;http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd&quot;&gt;&#xd;
+    &lt;soap:Header&gt;&#xd;
+        &lt;oas:Security soap:role=&quot;system&quot; soap:mustUnderstand=&quot;true&quot;&gt;&#xd;
+            &lt;oas:UsernameToken&gt;&#xd;
+                &lt;oas:Username&gt;systemID=ALVSHMRCCDS,ou=gsi systems,o=cds&lt;/oas:Username&gt;&#xd;
+                &lt;oas:Password Type=&quot;http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordText&quot;&gt;password&lt;/oas:Password&gt;&#xd;
+            &lt;/oas:UsernameToken&gt;&#xd;
+        &lt;/oas:Security&gt;&#xd;
+    &lt;/soap:Header&gt;&#xd;
+    &lt;soap:Body&gt;&#xd;
+        &lt;ALVSClearanceRequest xmlns=&quot;http://submitimportdocumenthmrcfacade.types.esb.ws.cara.defra.com&quot;&gt;&#xd;
+            &lt;ServiceHeader&gt;&#xd;
+                &lt;SourceSystem&gt;CDS&lt;/SourceSystem&gt;&#xd;
+                &lt;DestinationSystem&gt;ALVS&lt;/DestinationSystem&gt;&#xd;
+                &lt;CorrelationId&gt;193264645102865&lt;/CorrelationId&gt;&#xd;
+                &lt;ServiceCallTimestamp&gt;${__time(yyyy-MM-dd&apos;T&apos;hh:mm:ss.SSS)}&lt;/ServiceCallTimestamp&gt;&#xd;
+            &lt;/ServiceHeader&gt;&#xd;
+            &lt;Header&gt;&#xd;
+                &lt;EntryReference&gt;${MRN}&lt;/EntryReference&gt;&#xd;
+                &lt;EntryVersionNumber&gt;3&lt;/EntryVersionNumber&gt;&#xd;
+                &lt;PreviousVersionNumber&gt;2&lt;/PreviousVersionNumber&gt;&#xd;
+                &lt;DeclarationUCR&gt;1GB116445386000-KDA35932Y1BHX&lt;/DeclarationUCR&gt;&#xd;
+                &lt;DeclarationType&gt;S&lt;/DeclarationType&gt;&#xd;
+                &lt;ArrivalDateTime&gt;202201031224&lt;/ArrivalDateTime&gt;&#xd;
+                &lt;SubmitterTURN&gt;123456789012&lt;/SubmitterTURN&gt;&#xd;
+                &lt;DeclarantId&gt;GB123456789013&lt;/DeclarantId&gt;&#xd;
+                &lt;DeclarantName&gt;REDACTED&lt;/DeclarantName&gt;&#xd;
+                &lt;DispatchCountryCode&gt;CN&lt;/DispatchCountryCode&gt;&#xd;
+                &lt;GoodsLocationCode&gt;GBSTN&lt;/GoodsLocationCode&gt;&#xd;
+                &lt;MasterUCR&gt;GB/CNS1-SCT16S6LF00000&lt;/MasterUCR&gt;&#xd;
+            &lt;/Header&gt;&#xd;
+            &lt;Item&gt;&#xd;
+                &lt;ItemNumber&gt;1&lt;/ItemNumber&gt;&#xd;
+                &lt;CustomsProcedureCode&gt;4000000&lt;/CustomsProcedureCode&gt;&#xd;
+                &lt;TaricCommodityCode&gt;2309105100&lt;/TaricCommodityCode&gt;&#xd;
+                &lt;GoodsDescription&gt;DOG CHEW&lt;/GoodsDescription&gt;&#xd;
+                &lt;ConsigneeId&gt;GB123456789012&lt;/ConsigneeId&gt;&#xd;
+                &lt;ConsigneeName&gt;REDACTED&lt;/ConsigneeName&gt;&#xd;
+                &lt;ItemNetMass&gt;5011.200&lt;/ItemNetMass&gt;&#xd;
+                &lt;ItemOriginCountryCode&gt;CN&lt;/ItemOriginCountryCode&gt;&#xd;
+                &lt;Document&gt;&#xd;
+                    &lt;DocumentCode&gt;N853&lt;/DocumentCode&gt;&#xd;
+                    &lt;DocumentReference&gt;GBCVD2021.1396392&lt;/DocumentReference&gt;&#xd;
+                    &lt;DocumentStatus&gt;AE&lt;/DocumentStatus&gt;&#xd;
+                    &lt;DocumentControl&gt;P&lt;/DocumentControl&gt;&#xd;
+                &lt;/Document&gt;&#xd;
+                &lt;Check&gt;&#xd;
+                    &lt;CheckCode&gt;H222&lt;/CheckCode&gt;&#xd;
+                    &lt;DepartmentCode&gt;PHA&lt;/DepartmentCode&gt;&#xd;
+                &lt;/Check&gt;&#xd;
+            &lt;/Item&gt;&#xd;
+        &lt;/ALVSClearanceRequest&gt;&#xd;
+    &lt;/soap:Body&gt;&#xd;
+&lt;/soap:Envelope&gt;</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">Content-Type</stringProp>
+                <stringProp name="Header.value">application/xml</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+          <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Response Assertion" enabled="true">
+            <collectionProp name="Asserion.test_strings">
+              <stringProp name="49586">200</stringProp>
+            </collectionProp>
+            <stringProp name="Assertion.custom_message"></stringProp>
+            <stringProp name="Assertion.test_field">Assertion.response_code</stringProp>
+            <boolProp name="Assertion.assume_success">false</boolProp>
+            <intProp name="Assertion.test_type">1</intProp>
+          </ResponseAssertion>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Decision Request">
+          <stringProp name="TestPlan.comments">Before running the suite, replace &apos;service-name&apos; the name/url of the service to test. $env is set to the name of th environment the test is running in.</stringProp>
+          <stringProp name="HTTPSampler.domain">${HOST}</stringProp>
+          <stringProp name="HTTPSampler.port">${PORT}</stringProp>
+          <stringProp name="HTTPSampler.protocol">${PROTOCOL}</stringProp>
+          <stringProp name="HTTPSampler.contentEncoding">UTF8</stringProp>
+          <stringProp name="HTTPSampler.path">/ws/CDS/defra/alvsclearanceinbound/v1</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;&#xd;
+&lt;soap:Envelope xmlns:soap=&quot;http://www.w3.org/2003/05/soap-envelope&quot;&gt;&#xd;
+    &lt;soap:Header&gt;&#xd;
+        &lt;oas:Security soap:role=&quot;system&quot; soap:mustUnderstand=&quot;true&quot; xmlns:oas=&quot;http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd&quot;&gt;&#xd;
+            &lt;oas:UsernameToken&gt;&#xd;
+                &lt;oas:Username&gt;ibmtest&lt;/oas:Username&gt;&#xd;
+                &lt;oas:Password&gt;password&lt;/oas:Password&gt;&#xd;
+            &lt;/oas:UsernameToken&gt;&#xd;
+        &lt;/oas:Security&gt;&#xd;
+    &lt;/soap:Header&gt;&#xd;
+    &lt;soap:Body&gt;&#xd;
+        &lt;DecisionNotification xmlns=&quot;http://uk.gov.hmrc.ITSW2.ws&quot;&gt;&#xd;
+            &lt;DecisionNotification xmlns=&quot;http://www.hmrc.gov.uk/webservices/itsw/ws/decisionnotification&quot;&gt;&#xd;
+                &lt;ServiceHeader&gt;&#xd;
+                    &lt;SourceSystem&gt;ALVS&lt;/SourceSystem&gt;&#xd;
+                    &lt;DestinationSystem&gt;CDS&lt;/DestinationSystem&gt;&#xd;
+                    &lt;CorrelationId&gt;000&lt;/CorrelationId&gt;&#xd;
+                    &lt;ServiceCallTimestamp&gt;${__time(yyyy-MM-dd&apos;T&apos;hh:mm:ss.SSS)}&lt;/ServiceCallTimestamp&gt;&#xd;
+                &lt;/ServiceHeader&gt;&#xd;
+                &lt;Header&gt;&#xd;
+                    &lt;EntryReference&gt;${MRN}&lt;/EntryReference&gt;&#xd;
+                    &lt;EntryVersionNumber&gt;1&lt;/EntryVersionNumber&gt;&#xd;
+                    &lt;DecisionNumber&gt;1&lt;/DecisionNumber&gt;&#xd;
+                &lt;/Header&gt;&#xd;
+                &lt;Item&gt;&#xd;
+                    &lt;ItemNumber&gt;1&lt;/ItemNumber&gt;&#xd;
+                    &lt;Check&gt;&#xd;
+                        &lt;CheckCode&gt;H218&lt;/CheckCode&gt;&#xd;
+                        &lt;DecisionCode&gt;C02&lt;/DecisionCode&gt;&#xd;
+                        &lt;DecisionValidUntil&gt;202307042359&lt;/DecisionValidUntil&gt;&#xd;
+                    &lt;/Check&gt;&#xd;
+                    &lt;Check&gt;&#xd;
+                        &lt;CheckCode&gt;H219&lt;/CheckCode&gt;&#xd;
+                        &lt;DecisionCode&gt;C03&lt;/DecisionCode&gt;&#xd;
+                    &lt;/Check&gt;&#xd;
+                    &lt;Check&gt;&#xd;
+                        &lt;CheckCode&gt;H223&lt;/CheckCode&gt;&#xd;
+                        &lt;DecisionCode&gt;C03&lt;/DecisionCode&gt;&#xd;
+                    &lt;/Check&gt;&#xd;
+                &lt;/Item&gt;&#xd;
+                &lt;Item&gt;&#xd;
+                    &lt;ItemNumber&gt;2&lt;/ItemNumber&gt;&#xd;
+                    &lt;Check&gt;&#xd;
+                        &lt;CheckCode&gt;H219&lt;/CheckCode&gt;&#xd;
+                        &lt;DecisionCode&gt;C03&lt;/DecisionCode&gt;&#xd;
+                    &lt;/Check&gt;&#xd;
+                    &lt;Check&gt;&#xd;
+                        &lt;CheckCode&gt;H223&lt;/CheckCode&gt;&#xd;
+                        &lt;DecisionCode&gt;C03&lt;/DecisionCode&gt;&#xd;
+                    &lt;/Check&gt;&#xd;
+                &lt;/Item&gt;&#xd;
+            &lt;/DecisionNotification&gt;&#xd;
+        &lt;/DecisionNotification&gt;&#xd;
+    &lt;/soap:Body&gt;&#xd;
+&lt;/soap:Envelope&gt;</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">Content-Type</stringProp>
+                <stringProp name="Header.value">application/xml</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
           <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Response Assertion">
             <collectionProp name="Asserion.test_strings">
               <stringProp name="49586">200</stringProp>
@@ -3339,27 +3630,248 @@
             <intProp name="Assertion.test_type">1</intProp>
           </ResponseAssertion>
           <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Finalisation Request">
+          <stringProp name="TestPlan.comments">Before running the suite, replace &apos;service-name&apos; the name/url of the service to test. $env is set to the name of th environment the test is running in.</stringProp>
+          <stringProp name="HTTPSampler.domain">${HOST}</stringProp>
+          <stringProp name="HTTPSampler.port">${PORT}</stringProp>
+          <stringProp name="HTTPSampler.protocol">${PROTOCOL}</stringProp>
+          <stringProp name="HTTPSampler.contentEncoding">UTF8</stringProp>
+          <stringProp name="HTTPSampler.path">/ITSW/CDS/NotifyFinalisedStateCDSFacadeService</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;&#xd;
+&lt;soap:Envelope xmlns:soap=&quot;http://www.w3.org/2003/05/soap-envelope&quot; xmlns:oas=&quot;http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd&quot;&gt;&#xd;
+    &lt;soap:Header&gt;&#xd;
+        &lt;oas:Security soap:role=&quot;system&quot; soap:mustUnderstand=&quot;true&quot;&gt;&#xd;
+            &lt;oas:UsernameToken&gt;&#xd;
+                &lt;oas:Username&gt;systemID=ALVSHMRCCDS,ou=gsi systems,o=cds&lt;/oas:Username&gt;&#xd;
+                &lt;oas:Password Type=&quot;http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordText&quot;&gt;password&lt;/oas:Password&gt;&#xd;
+            &lt;/oas:UsernameToken&gt;&#xd;
+        &lt;/oas:Security&gt;&#xd;
+    &lt;/soap:Header&gt;&#xd;
+    &lt;soap:Body&gt;&#xd;
+        &lt;FinalisationNotificationRequest xmlns=&quot;http://notifyfinalisedstatehmrcfacade.types.esb.ws.cara.defra.com&quot;&gt;&#xd;
+            &lt;ServiceHeader&gt;&#xd;
+                &lt;SourceSystem&gt;CDS&lt;/SourceSystem&gt;&#xd;
+                &lt;DestinationSystem&gt;ALVS&lt;/DestinationSystem&gt;&#xd;
+                &lt;CorrelationId&gt;1234567890123456789&lt;/CorrelationId&gt;&#xd;
+                &lt;ServiceCallTimestamp&gt;${__time(yyyy-MM-dd&apos;T&apos;hh:mm:ss.SSS)}&lt;/ServiceCallTimestamp&gt;&#xd;
+            &lt;/ServiceHeader&gt;&#xd;
+            &lt;Header&gt;&#xd;
+                &lt;EntryReference&gt;${MRN}&lt;/EntryReference&gt;&#xd;
+                &lt;EntryVersionNumber&gt;4&lt;/EntryVersionNumber&gt;&#xd;
+                &lt;DecisionNumber&gt;3&lt;/DecisionNumber&gt;&#xd;
+                &lt;FinalState&gt;0&lt;/FinalState&gt;&#xd;
+                &lt;ManualAction&gt;N&lt;/ManualAction&gt;&#xd;
+            &lt;/Header&gt;&#xd;
+        &lt;/FinalisationNotificationRequest&gt;&#xd;
+    &lt;/soap:Body&gt;&#xd;
+&lt;/soap:Envelope&gt;</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
           <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager">
             <collectionProp name="HeaderManager.headers">
               <elementProp name="" elementType="Header">
                 <stringProp name="Header.name">Content-Type</stringProp>
-                <stringProp name="Header.value">application/soap+xml</stringProp>
+                <stringProp name="Header.value">application/xml</stringProp>
               </elementProp>
             </collectionProp>
           </HeaderManager>
           <hashTree/>
+          <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Response Assertion">
+            <collectionProp name="Asserion.test_strings">
+              <stringProp name="49586">200</stringProp>
+            </collectionProp>
+            <stringProp name="Assertion.custom_message"></stringProp>
+            <stringProp name="Assertion.test_field">Assertion.response_code</stringProp>
+            <boolProp name="Assertion.assume_success">false</boolProp>
+            <intProp name="Assertion.test_type">1</intProp>
+          </ResponseAssertion>
+          <hashTree/>
         </hashTree>
+        <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>true</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+              <sentBytes>true</sentBytes>
+              <url>true</url>
+              <threadCounts>true</threadCounts>
+              <idleTime>true</idleTime>
+              <connectTime>true</connectTime>
+            </value>
+          </objProp>
+          <stringProp name="filename"></stringProp>
+        </ResultCollector>
+        <hashTree/>
+      </hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Decision Notification Thread" enabled="false">
+        <intProp name="ThreadGroup.num_threads">60</intProp>
+        <intProp name="ThreadGroup.ramp_time">0</intProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller">
+          <intProp name="LoopController.loops">-1</intProp>
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+        </elementProp>
+      </ThreadGroup>
+      <hashTree>
         <ConstantThroughputTimer guiclass="TestBeanGUI" testclass="ConstantThroughputTimer" testname="Constant Throughput Timer">
-          <doubleProp>
-            <name>throughput</name>
-            <value>2000.0</value>
-            <savedValue>0.0</savedValue>
-          </doubleProp>
+          <stringProp name="throughput">${REQPERMIN}</stringProp>
           <intProp name="calcMode">2</intProp>
         </ConstantThroughputTimer>
         <hashTree/>
+        <CSVDataSet guiclass="TestBeanGUI" testclass="CSVDataSet" testname="CSV Data Set Config">
+          <stringProp name="delimiter">,</stringProp>
+          <stringProp name="fileEncoding"></stringProp>
+          <stringProp name="filename">./data/mrn.txt</stringProp>
+          <boolProp name="ignoreFirstLine">false</boolProp>
+          <boolProp name="quotedData">false</boolProp>
+          <boolProp name="recycle">false</boolProp>
+          <stringProp name="shareMode">shareMode.group</stringProp>
+          <boolProp name="stopThread">true</boolProp>
+          <stringProp name="variableNames">MRN</stringProp>
+        </CSVDataSet>
+        <hashTree/>
+        <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>true</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+              <sentBytes>true</sentBytes>
+              <url>true</url>
+              <threadCounts>true</threadCounts>
+              <idleTime>true</idleTime>
+              <connectTime>true</connectTime>
+            </value>
+          </objProp>
+          <stringProp name="filename"></stringProp>
+        </ResultCollector>
+        <hashTree/>
       </hashTree>
-      <ResultCollector guiclass="SummaryReport" testclass="ResultCollector" testname="Summary Report">
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Finalisation Thread" enabled="false">
+        <intProp name="ThreadGroup.num_threads">60</intProp>
+        <intProp name="ThreadGroup.ramp_time">0</intProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller">
+          <intProp name="LoopController.loops">-1</intProp>
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+        </elementProp>
+      </ThreadGroup>
+      <hashTree>
+        <ConstantThroughputTimer guiclass="TestBeanGUI" testclass="ConstantThroughputTimer" testname="Constant Throughput Timer">
+          <stringProp name="throughput">${REQPERMIN}</stringProp>
+          <intProp name="calcMode">2</intProp>
+        </ConstantThroughputTimer>
+        <hashTree/>
+        <CSVDataSet guiclass="TestBeanGUI" testclass="CSVDataSet" testname="CSV Data Set Config">
+          <stringProp name="delimiter">,</stringProp>
+          <stringProp name="fileEncoding"></stringProp>
+          <stringProp name="filename">./data/mrn.txt</stringProp>
+          <boolProp name="ignoreFirstLine">false</boolProp>
+          <boolProp name="quotedData">false</boolProp>
+          <boolProp name="recycle">false</boolProp>
+          <stringProp name="shareMode">shareMode.group</stringProp>
+          <boolProp name="stopThread">true</boolProp>
+          <stringProp name="variableNames">MRN</stringProp>
+        </CSVDataSet>
+        <hashTree/>
+        <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree">
+          <boolProp name="ResultCollector.error_logging">false</boolProp>
+          <objProp>
+            <name>saveConfig</name>
+            <value class="SampleSaveConfiguration">
+              <time>true</time>
+              <latency>true</latency>
+              <timestamp>true</timestamp>
+              <success>true</success>
+              <label>true</label>
+              <code>true</code>
+              <message>true</message>
+              <threadName>true</threadName>
+              <dataType>true</dataType>
+              <encoding>false</encoding>
+              <assertions>true</assertions>
+              <subresults>true</subresults>
+              <responseData>false</responseData>
+              <samplerData>false</samplerData>
+              <xml>false</xml>
+              <fieldNames>true</fieldNames>
+              <responseHeaders>false</responseHeaders>
+              <requestHeaders>false</requestHeaders>
+              <responseDataOnError>false</responseDataOnError>
+              <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+              <assertionsResultsToSave>0</assertionsResultsToSave>
+              <bytes>true</bytes>
+              <sentBytes>true</sentBytes>
+              <url>true</url>
+              <threadCounts>true</threadCounts>
+              <idleTime>true</idleTime>
+              <connectTime>true</connectTime>
+            </value>
+          </objProp>
+          <stringProp name="filename"></stringProp>
+        </ResultCollector>
+        <hashTree/>
+      </hashTree>
+      <ResultCollector guiclass="StatVisualizer" testclass="ResultCollector" testname="Aggregate Report">
         <boolProp name="ResultCollector.error_logging">false</boolProp>
         <objProp>
           <name>saveConfig</name>
@@ -3393,8 +3905,7 @@
             <connectTime>true</connectTime>
           </value>
         </objProp>
-        <stringProp name="filename">C:\Programs\apache-jmeter-5.6.3\bin\report.csv</stringProp>
-        <boolProp name="saveHeaders">false</boolProp>
+        <stringProp name="filename"></stringProp>
       </ResultCollector>
       <hashTree/>
     </hashTree>
