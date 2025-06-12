@@ -5,10 +5,20 @@
       <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
         <collectionProp name="Arguments.arguments"/>
       </elementProp>
-      <boolProp name="TestPlan.functional_mode">false</boolProp>
-      <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
     </TestPlan>
     <hashTree>
+      <ConfigTestElement guiclass="HttpDefaultsGui" testclass="ConfigTestElement" testname="Set Https Proxy">
+        <stringProp name="HTTPSampler.proxyScheme">https</stringProp>
+        <stringProp name="HTTPSampler.proxyHost">${__P(https.proxyHost,)}</stringProp>
+        <stringProp name="HTTPSampler.proxyPort">${__P(https.proxyPort,)}</stringProp>
+        <stringProp name="HTTPSampler.proxyUser">${__P(https.proxyUser,)}</stringProp>
+        <stringProp name="HTTPSampler.proxyPass">${__P(https.proxyPassword,)}</stringProp>
+        <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
+          <collectionProp name="Arguments.arguments"/>
+        </elementProp>
+        <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
+      </ConfigTestElement>
+      <hashTree/>
       <SetupThreadGroup guiclass="SetupThreadGroupGui" testclass="SetupThreadGroup" testname="Setup">
         <intProp name="ThreadGroup.num_threads">1</intProp>
         <intProp name="ThreadGroup.ramp_time">1</intProp>
@@ -94,11 +104,6 @@ expectedVars.each { key, defaultValue -&gt;
           <hashTree/>
         </hashTree>
         <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Send Notification">
-          <stringProp name="HTTPSampler.proxyScheme">https</stringProp>
-          <stringProp name="HTTPSampler.proxyHost">${__P(https.proxyHost,)}</stringProp>
-          <stringProp name="HTTPSampler.proxyPort">${__P(https.proxyPort,)}</stringProp>
-          <stringProp name="HTTPSampler.proxyUser">${__P(https.proxyUser,)}</stringProp>
-          <stringProp name="HTTPSampler.proxyPass">${__P(https.proxyPassword,)}</stringProp>
           <stringProp name="HTTPSampler.domain">${asb_host}</stringProp>
           <stringProp name="HTTPSampler.protocol">https</stringProp>
           <stringProp name="HTTPSampler.path">${asb_path}</stringProp>
@@ -134,7 +139,6 @@ expectedVars.each { key, defaultValue -&gt;
               </elementProp>
             </collectionProp>
           </elementProp>
-          <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
         </HTTPSamplerProxy>
         <hashTree>
           <JSR223PreProcessor guiclass="TestBeanGUI" testclass="JSR223PreProcessor" testname="Generate random Notification data" enabled="true">
@@ -334,11 +338,6 @@ vars.put(&quot;referenceNumber&quot;, ref)</stringProp>
           <hashTree/>
         </hashTree>
         <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Send GMR">
-          <stringProp name="HTTPSampler.proxyScheme">https</stringProp>
-          <stringProp name="HTTPSampler.proxyHost">${__P(https.proxyHost,)}</stringProp>
-          <stringProp name="HTTPSampler.proxyPort">${__P(https.proxyPort,)}</stringProp>
-          <stringProp name="HTTPSampler.proxyUser">${__P(https.proxyUser,)}</stringProp>
-          <stringProp name="HTTPSampler.proxyPass">${__P(https.proxyPassword,)}</stringProp>
           <stringProp name="HTTPSampler.domain">${asb_host}</stringProp>
           <stringProp name="HTTPSampler.protocol">https</stringProp>
           <stringProp name="HTTPSampler.path">${asb_path}</stringProp>
@@ -388,7 +387,6 @@ vars.put(&quot;referenceNumber&quot;, ref)</stringProp>
               </elementProp>
             </collectionProp>
           </elementProp>
-          <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
         </HTTPSamplerProxy>
         <hashTree>
           <JSR223PreProcessor guiclass="TestBeanGUI" testclass="JSR223PreProcessor" testname="Generate random GMR data" enabled="true">
@@ -425,7 +423,7 @@ vars.put(&quot;id&quot;, id)</stringProp>
         <elementProp name="ThreadGroup.main_controller" elementType="OpenModelThreadGroupController"/>
       </OpenModelThreadGroup>
       <hashTree>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="HTTP Request" enabled="true">
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="HTTP Request">
           <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>
           <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
