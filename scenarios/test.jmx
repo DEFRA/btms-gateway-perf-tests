@@ -57,9 +57,9 @@ expectedVars.each { key, defaultValue -&gt;
         <elementProp name="ThreadGroup.main_controller" elementType="OpenModelThreadGroupController"/>
       </OpenModelThreadGroup>
       <hashTree>
-        <OnceOnlyController guiclass="OnceOnlyControllerGui" testclass="OnceOnlyController" testname="Initialise vars"/>
+        <OnceOnlyController guiclass="OnceOnlyControllerGui" testclass="OnceOnlyController" testname="Initialise vars" enabled="true"/>
         <hashTree>
-          <Arguments guiclass="ArgumentsPanel" testclass="Arguments" testname="Get Props" enabled="true">
+          <Arguments guiclass="ArgumentsPanel" testclass="Arguments" testname="Get Props" enabled="false">
             <collectionProp name="Arguments.arguments">
               <elementProp name="asb_connectionString" elementType="Argument">
                 <stringProp name="Argument.name">asb_connectionString</stringProp>
@@ -74,7 +74,7 @@ expectedVars.each { key, defaultValue -&gt;
             </collectionProp>
           </Arguments>
           <hashTree/>
-          <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Parse ASB connection  string and get auth token">
+          <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Parse ASB connection  string and get auth token" enabled="true">
             <stringProp name="scriptLanguage">groovy</stringProp>
             <stringProp name="parameters">${__groovy(props.get(&quot;ServiceBus__Notifications__ConnectionString&quot;))} ${__groovy(vars.get(&quot;asb_tokenExpirySecs&quot;) ?: &quot;3600&quot;)} </stringProp>
             <stringProp name="filename">${__P(baseDir)}/scripts/generate-asb-vars.groovy</stringProp>
@@ -84,9 +84,9 @@ expectedVars.each { key, defaultValue -&gt;
           <hashTree/>
         </hashTree>
         <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Send Notification" enabled="true">
-          <stringProp name="HTTPSampler.domain">${__groovy(props.get(&quot;asb_host&quot;))}</stringProp>
-          <stringProp name="HTTPSampler.protocol">${__groovy(props.get(&quot;asb_protocol&quot;))}</stringProp>
-          <stringProp name="HTTPSampler.path">${__groovy(props.get(&quot;asb_path&quot;))}</stringProp>
+          <stringProp name="HTTPSampler.domain">${asb_host}</stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.path">${asb_path}</stringProp>
           <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
           <stringProp name="HTTPSampler.method">POST</stringProp>
           <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
@@ -121,7 +121,7 @@ expectedVars.each { key, defaultValue -&gt;
           </elementProp>
         </HTTPSamplerProxy>
         <hashTree>
-          <JSR223PreProcessor guiclass="TestBeanGUI" testclass="JSR223PreProcessor" testname="Generate random Notification data">
+          <JSR223PreProcessor guiclass="TestBeanGUI" testclass="JSR223PreProcessor" testname="Generate random Notification data" enabled="true">
             <stringProp name="scriptLanguage">groovy</stringProp>
             <stringProp name="parameters"></stringProp>
             <stringProp name="filename"></stringProp>
@@ -293,7 +293,7 @@ vars.put(&quot;referenceNumber&quot;, ref)</stringProp>
       <hashTree>
         <OnceOnlyController guiclass="OnceOnlyControllerGui" testclass="OnceOnlyController" testname="Initialise vars" enabled="true"/>
         <hashTree>
-          <Arguments guiclass="ArgumentsPanel" testclass="Arguments" testname="Get Props" enabled="true">
+          <Arguments guiclass="ArgumentsPanel" testclass="Arguments" testname="Get Props" enabled="false">
             <collectionProp name="Arguments.arguments">
               <elementProp name="asb_connectionString" elementType="Argument">
                 <stringProp name="Argument.name">asb_connectionString</stringProp>
@@ -319,7 +319,7 @@ vars.put(&quot;referenceNumber&quot;, ref)</stringProp>
         </hashTree>
         <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Send GMR" enabled="true">
           <stringProp name="HTTPSampler.domain">${asb_host}</stringProp>
-          <stringProp name="HTTPSampler.protocol">${ServiceBusProtocol}</stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
           <stringProp name="HTTPSampler.path">${asb_path}</stringProp>
           <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
           <stringProp name="HTTPSampler.method">POST</stringProp>

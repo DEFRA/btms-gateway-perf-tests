@@ -46,6 +46,6 @@ if [[ "$MODE" == "gui" ]]; then
   jmeter -t "$JMX_FILE" -JbaseDir="$BASE_DIR" -j /dev/stdout
 else
   echo "Running JMeter in CLI mode..."
-  jmeter -n -t "$JMX_FILE" -l results.jtl -JbaseDir="$BASE_DIR"
-  echo "Done. Results saved to results.jtl" -j /dev/stdout
+  jmeter -n -t "$JMX_FILE" -l results.jtl -JbaseDir="$BASE_DIR" -j /dev/stdout
+  echo "Done. Results saved to results.jtl"
 fi

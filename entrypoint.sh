@@ -55,7 +55,7 @@ if [ -n "$PROXY_USER" ]; then
 fi
 
 # Run the test suite
-jmeter ${JVM_PROXY_OPTS} -n -t ${SCENARIOFILE} -e -l "${REPORTFILE}" -o ${JM_REPORTS} -j ${LOGFILE} -f -Jenv="${ENVIRONMENT}" -JbaseDir="${JM_HOME}"
+jmeter ${JVM_PROXY_OPTS} -n -t ${SCENARIOFILE} -e -l "${REPORTFILE}" -o ${JM_REPORTS} -f -Jenv="${ENVIRONMENT}" -JbaseDir="${JM_HOME}" -j /dev/stdout #-j ${LOGFILE} 
 test_exit_code=$?
 
 # Publish the results into S3 so they can be displayed in the CDP Portal

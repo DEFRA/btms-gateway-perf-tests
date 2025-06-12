@@ -3,7 +3,7 @@ FROM defradigital/cdp-perf-test-docker:latest
 WORKDIR /opt/perftest
 
 COPY scenarios/ ./scenarios/
-COPY scenarios/ ./scripts/
+COPY scripts/ ./scripts/
 COPY entrypoint.sh .
 COPY user.properties .
 
