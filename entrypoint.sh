@@ -22,11 +22,13 @@ LOGFILE=${JM_LOGS}/perftest-${TEST_SCENARIO}.log
 # === PROXY CONFIGURATION ===
 
 JVM_PROXY_OPTS=""
+PROXY_ENV="${HTTPS_PROXY:-$CDP_HTTPS_PROXY}"
 
-if [ -n "$HTTPS_PROXY" ]; then
-  echo "Detected HTTPS_PROXY: $HTTPS_PROXY"
+if [ -n "$PROXY_ENV" ]; then
+  echo "Detected HTTPS_PROXY: $PROXY_ENV"
   
-  PROXY_URL="${HTTPS_PROXY#https://}"
+  PROXY_URL="${PROXY_ENV#http://}"
+  PROXY_URL="${PROXY_URL#https://}"
 
   if echo "$PROXY_URL" | grep -q '@'; then
     PROXY_AUTH="${PROXY_URL%@*}"
