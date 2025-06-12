@@ -9,6 +9,7 @@ if [ -z "${JM_HOME}" ]; then
 fi
 
 JM_SCENARIOS=${JM_HOME}/scenarios
+JM_SCRIPTS=${JM_HOME}/scripts
 JM_REPORTS=${JM_HOME}/reports
 JM_LOGS=${JM_HOME}/logs
 
@@ -18,8 +19,43 @@ SCENARIOFILE=${JM_SCENARIOS}/${TEST_SCENARIO}.jmx
 REPORTFILE=${NOW}-perftest-${TEST_SCENARIO}-report.csv
 LOGFILE=${JM_LOGS}/perftest-${TEST_SCENARIO}.log
 
+# === PROXY CONFIGURATION ===
+
+JVM_PROXY_OPTS=""
+
+if [ -n "$HTTPS_PROXY" ]; then
+  echo "Detected HTTPS_PROXY: $HTTPS_PROXY"
+  
+  PROXY_URL="${HTTPS_PROXY#https://}"
+
+  if echo "$PROXY_URL" | grep -q '@'; then
+    PROXY_AUTH="${PROXY_URL%@*}"
+    PROXY_HOSTPORT="${PROXY_URL#*@}"
+
+    PROXY_USER="${PROXY_AUTH%%:*}"
+    PROXY_PASS="${PROXY_AUTH#*:}"
+  else
+    PROXY_HOSTPORT="$PROXY_URL"
+    PROXY_USER=""
+    PROXY_PASS=""
+  fi
+
+  PROXY_HOST="${PROXY_HOSTPORT%%:*}"
+  PROXY_PORT="${PROXY_HOSTPORT#*:}"
+
+  if [ "$PROXY_HOST" = "$PROXY_PORT" ]; then
+    PROXY_PORT="443"
+  fi
+
+if [ -n "$PROXY_USER" ]; then
+    JVM_PROXY_OPTS="-Dhttps.proxyHost=${PROXY_HOST} -Dhttps.proxyPort=${PROXY_PORT} -Dhttps.proxyUser=${PROXY_USER} -Dhttps.proxyPassword=${PROXY_PASS}"
+  else
+    JVM_PROXY_OPTS="-Dhttps.proxyHost=${PROXY_HOST} -Dhttps.proxyPort=${PROXY_PORT}"
+  fi
+fi
+
 # Run the test suite
-jmeter -n -t ${SCENARIOFILE} -e -l "${REPORTFILE}" -o ${JM_REPORTS} -j ${LOGFILE} -f -Jenv="${ENVIRONMENT}"
+jmeter ${JVM_PROXY_OPTS} -n -t ${SCENARIOFILE} -e -l "${REPORTFILE}" -o ${JM_REPORTS} -j ${LOGFILE} -f -Jenv="${ENVIRONMENT}" -JbaseDir="${JM_HOME}"
 test_exit_code=$?
 
 # Publish the results into S3 so they can be displayed in the CDP Portal
