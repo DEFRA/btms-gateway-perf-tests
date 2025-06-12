@@ -20,12 +20,22 @@
         </elementProp>
       </SetupThreadGroup>
       <hashTree>
-        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Initialise Environment Variables as Props" enabled="true">
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Initialise Environment Variables as Props">
           <stringProp name="scriptLanguage">groovy</stringProp>
           <stringProp name="parameters"></stringProp>
           <stringProp name="filename"></stringProp>
           <stringProp name="cacheKey">true</stringProp>
-          <stringProp name="script">def env = System.getenv(&quot;ENV&quot;) ?: &quot;NODEFAULT&quot;
+          <stringProp name="script">System.setProperty(&quot;java.net.useSystemProxies&quot;, &quot;true&quot;)
+
+log.info(&quot;===== JVM Proxy Properties =====&quot;)
+System.getProperties().entrySet().each { entry -&gt;
+    if (entry.key.toString().contains(&quot;proxy&quot;)) {
+        log.info(&quot;${entry.key} = ${entry.value}&quot;)
+    }
+}
+
+
+def env = System.getenv(&quot;ENV&quot;) ?: &quot;NODEFAULT&quot;
 
 def expectedVars = [
     &quot;BtmsGateway__Host&quot; : &quot;btms-gateway.${env}.cdp-int.defra.cloud&quot;,
@@ -45,7 +55,7 @@ def expectedVars = [
 expectedVars.each { key, defaultValue -&gt;
     def value = System.getenv(key) ?: defaultValue
     props.put(key, value)
-    log.info(&quot;Set JMeter prop: ${key} = ${value}&quot;)
+    // log.info(&quot;Set JMeter prop: ${key} = ${value}&quot;)
 }</stringProp>
         </JSR223Sampler>
         <hashTree/>
@@ -284,7 +294,7 @@ vars.put(&quot;referenceNumber&quot;, ref)</stringProp>
         </HTTPSamplerProxy>
         <hashTree/>
       </hashTree>
-      <OpenModelThreadGroup guiclass="OpenModelThreadGroupGui" testclass="OpenModelThreadGroup" testname="Gmrs" enabled="true">
+      <OpenModelThreadGroup guiclass="OpenModelThreadGroupGui" testclass="OpenModelThreadGroup" testname="Gmrs">
         <stringProp name="OpenModelThreadGroup.schedule">rate(10/min) even_arrivals(1 min)</stringProp>
         <stringProp name="OpenModelThreadGroup.random_seed"> </stringProp>
         <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
