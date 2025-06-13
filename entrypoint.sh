@@ -1,3 +1,4 @@
+#!/bin/bash
 for ((i=1; i<=10; i++)); do
     curl -i https://trade-imports-decision-comparer.perf-test.cdp-int.defra.cloud
     echo 
