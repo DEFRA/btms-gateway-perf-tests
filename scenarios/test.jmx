@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <jmeterTestPlan version="1.2" properties="5.0" jmeter="5.5">
   <hashTree>
-    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="btms-gateway-perf-tests Performance Tests">
-      <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
+    <TestPlan guiclass="TestPlanGui" testclass="TestPlan" testname="btms-gateway-perf-tests Performance Tests" enabled="true">
+      <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
         <collectionProp name="Arguments.arguments"/>
       </elementProp>
       <boolProp name="TestPlan.functional_mode">false</boolProp>
       <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
+      <stringProp name="TestPlan.comments"></stringProp>
+      <stringProp name="TestPlan.user_define_classpath"></stringProp>
     </TestPlan>
     <hashTree>
       <ConfigTestElement guiclass="HttpDefaultsGui" testclass="ConfigTestElement" testname="Set Https Proxy" enabled="false">
@@ -537,7 +539,6 @@ Map parseAsbConnectionString(String str) {
           <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
           <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
           <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
-          <stringProp name="HTTPSampler.ipSource">${__P(https.proxyPassword,)}</stringProp>
           <stringProp name="HTTPSampler.proxyScheme">https</stringProp>
           <stringProp name="HTTPSampler.proxyHost">${__P(https.proxyHost,)}</stringProp>
           <stringProp name="HTTPSampler.proxyPort">${__P(https.proxyPort,)}</stringProp>
