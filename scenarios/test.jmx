@@ -537,12 +537,17 @@ Map parseAsbConnectionString(String str) {
           <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
           <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
           <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+          <stringProp name="HTTPSampler.proxyScheme">https</stringProp>
+          <stringProp name="HTTPSampler.proxyHost">${__P(https.proxyHost,)}</stringProp>
+          <stringProp name="HTTPSampler.proxyPort">${__P(https.proxyPort,)}</stringProp>
+          <stringProp name="HTTPSampler.proxyUser">${__P(https.proxyUser,)}</stringProp>
+          <stringProp name="HTTPSampler.proxyPass">${__P(https.proxyPass,)}</stringProp>
           <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
           <stringProp name="HTTPSampler.connect_timeout"></stringProp>
           <stringProp name="HTTPSampler.response_timeout"></stringProp>
         </HTTPSamplerProxy>
         <hashTree>
-          <JSR223PreProcessor guiclass="TestBeanGUI" testclass="JSR223PreProcessor" testname="Use Proxy" enabled="true">
+          <JSR223PreProcessor guiclass="TestBeanGUI" testclass="JSR223PreProcessor" testname="Use Proxy" enabled="false">
             <stringProp name="scriptLanguage">groovy</stringProp>
             <stringProp name="parameters"></stringProp>
             <stringProp name="filename"></stringProp>
@@ -1185,12 +1190,17 @@ def randomAlphanum(len) {
           <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
           <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
           <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+          <stringProp name="HTTPSampler.proxyScheme">https</stringProp>
+          <stringProp name="HTTPSampler.proxyHost">${__P(https.proxyHost,)}</stringProp>
+          <stringProp name="HTTPSampler.proxyPort">${__P(https.proxyPort,)}</stringProp>
+          <stringProp name="HTTPSampler.proxyUser">${__P(https.proxyUser,)}</stringProp>
+          <stringProp name="HTTPSampler.proxyPass">${__P(https.proxyPass,)}</stringProp>
           <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
           <stringProp name="HTTPSampler.connect_timeout"></stringProp>
           <stringProp name="HTTPSampler.response_timeout"></stringProp>
         </HTTPSamplerProxy>
         <hashTree>
-          <JSR223PreProcessor guiclass="TestBeanGUI" testclass="JSR223PreProcessor" testname="Use Proxy" enabled="true">
+          <JSR223PreProcessor guiclass="TestBeanGUI" testclass="JSR223PreProcessor" testname="Use Proxy" enabled="false">
             <stringProp name="scriptLanguage">groovy</stringProp>
             <stringProp name="parameters"></stringProp>
             <stringProp name="filename"></stringProp>
@@ -1404,12 +1414,17 @@ vars.put(&quot;referenceNumber&quot;, ref)</stringProp>
           <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
           <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
           <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+          <stringProp name="HTTPSampler.proxyScheme">https</stringProp>
+          <stringProp name="HTTPSampler.proxyHost">${__P(https.proxyHost,)}</stringProp>
+          <stringProp name="HTTPSampler.proxyPort">${__P(https.proxyPort,)}</stringProp>
+          <stringProp name="HTTPSampler.proxyUser">${__P(https.proxyUser,)}</stringProp>
+          <stringProp name="HTTPSampler.proxyPass">${__P(https.proxyPass,)}</stringProp>
           <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
           <stringProp name="HTTPSampler.connect_timeout"></stringProp>
           <stringProp name="HTTPSampler.response_timeout"></stringProp>
         </HTTPSamplerProxy>
         <hashTree>
-          <JSR223PreProcessor guiclass="TestBeanGUI" testclass="JSR223PreProcessor" testname="Use Proxy" enabled="true">
+          <JSR223PreProcessor guiclass="TestBeanGUI" testclass="JSR223PreProcessor" testname="Use Proxy" enabled="false">
             <stringProp name="scriptLanguage">groovy</stringProp>
             <stringProp name="parameters"></stringProp>
             <stringProp name="filename"></stringProp>
