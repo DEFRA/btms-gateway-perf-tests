@@ -13,6 +13,9 @@ JM_SCRIPTS=${JM_HOME}/scripts
 JM_REPORTS=${JM_HOME}/reports
 JM_LOGS=${JM_HOME}/logs
 
+rm -rf "${JM_REPORTS:?}/"*
+rm -rf "${JM_LOGS:?}/"*
+
 mkdir -p ${JM_REPORTS} ${JM_LOGS}
 
 SCENARIOFILE=${JM_SCENARIOS}/${TEST_SCENARIO}.jmx

@@ -16,3 +16,5 @@ reports/
 .env.*
 logs/
 results.jtl
+*-test-report.csv
+/?
