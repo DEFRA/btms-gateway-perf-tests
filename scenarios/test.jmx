@@ -9,7 +9,7 @@
       <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
     </TestPlan>
     <hashTree>
-      <ConfigTestElement guiclass="HttpDefaultsGui" testclass="ConfigTestElement" testname="Set Https Proxy" enabled="true">
+      <ConfigTestElement guiclass="HttpDefaultsGui" testclass="ConfigTestElement" testname="Set Https Proxy" enabled="false">
         <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
           <collectionProp name="Arguments.arguments"/>
         </elementProp>
@@ -537,10 +537,39 @@ Map parseAsbConnectionString(String str) {
           <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
           <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
           <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+          <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
           <stringProp name="HTTPSampler.connect_timeout"></stringProp>
           <stringProp name="HTTPSampler.response_timeout"></stringProp>
         </HTTPSamplerProxy>
         <hashTree>
+          <JSR223PreProcessor guiclass="TestBeanGUI" testclass="JSR223PreProcessor" testname="Use Proxy" enabled="true">
+            <stringProp name="scriptLanguage">groovy</stringProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="cacheKey">true</stringProp>
+            <stringProp name="script">def proxyHost = System.getProperty(&quot;https.proxyHost&quot;)
+def proxyPort = System.getProperty(&quot;https.proxyPort&quot;)
+def proxyUser = System.getProperty(&quot;https.proxyUser&quot;)
+def proxyPass = System.getProperty(&quot;https.proxyPassword&quot;)
+def proxyScheme = &quot;https&quot;
+
+import org.apache.jmeter.protocol.http.sampler.HTTPSamplerBase
+
+if (sampler instanceof HTTPSamplerBase) {
+    sampler.setDomain(proxyHost)
+    sampler.setPort(proxyPort)
+    sampler.setProtocol(proxyScheme)
+
+    if (proxyUser &amp;&amp; proxyPass) {
+        sampler.setProperty(&quot;HTTPSampler.proxyUser&quot;, proxyUser)
+        sampler.setProperty(&quot;HTTPSampler.proxyPass&quot;, proxyPass)
+    }
+
+    log.info(&quot;Applied proxy config to sampler: ${proxyHost}:${proxyPort} (${proxyScheme})&quot;)
+}
+</stringProp>
+          </JSR223PreProcessor>
+          <hashTree/>
           <JSR223PreProcessor guiclass="TestBeanGUI" testclass="JSR223PreProcessor" testname="Generate random Notification data" enabled="true">
             <stringProp name="scriptLanguage">groovy</stringProp>
             <stringProp name="parameters"></stringProp>
@@ -1156,10 +1185,39 @@ def randomAlphanum(len) {
           <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
           <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
           <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+          <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
           <stringProp name="HTTPSampler.connect_timeout"></stringProp>
           <stringProp name="HTTPSampler.response_timeout"></stringProp>
         </HTTPSamplerProxy>
         <hashTree>
+          <JSR223PreProcessor guiclass="TestBeanGUI" testclass="JSR223PreProcessor" testname="Use Proxy" enabled="true">
+            <stringProp name="scriptLanguage">groovy</stringProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="cacheKey">true</stringProp>
+            <stringProp name="script">def proxyHost = System.getProperty(&quot;https.proxyHost&quot;)
+def proxyPort = System.getProperty(&quot;https.proxyPort&quot;)
+def proxyUser = System.getProperty(&quot;https.proxyUser&quot;)
+def proxyPass = System.getProperty(&quot;https.proxyPassword&quot;)
+def proxyScheme = &quot;https&quot;
+
+import org.apache.jmeter.protocol.http.sampler.HTTPSamplerBase
+
+if (sampler instanceof HTTPSamplerBase) {
+    sampler.setDomain(proxyHost)
+    sampler.setPort(proxyPort)
+    sampler.setProtocol(proxyScheme)
+
+    if (proxyUser &amp;&amp; proxyPass) {
+        sampler.setProperty(&quot;HTTPSampler.proxyUser&quot;, proxyUser)
+        sampler.setProperty(&quot;HTTPSampler.proxyPass&quot;, proxyPass)
+    }
+
+    log.info(&quot;Applied proxy config to sampler: ${proxyHost}:${proxyPort} (${proxyScheme})&quot;)
+}
+</stringProp>
+          </JSR223PreProcessor>
+          <hashTree/>
           <JSR223PreProcessor guiclass="TestBeanGUI" testclass="JSR223PreProcessor" testname="Generate random Notification data" enabled="false">
             <stringProp name="scriptLanguage">groovy</stringProp>
             <stringProp name="parameters"></stringProp>
@@ -1346,10 +1404,39 @@ vars.put(&quot;referenceNumber&quot;, ref)</stringProp>
           <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
           <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
           <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+          <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
           <stringProp name="HTTPSampler.connect_timeout"></stringProp>
           <stringProp name="HTTPSampler.response_timeout"></stringProp>
         </HTTPSamplerProxy>
         <hashTree>
+          <JSR223PreProcessor guiclass="TestBeanGUI" testclass="JSR223PreProcessor" testname="Use Proxy" enabled="true">
+            <stringProp name="scriptLanguage">groovy</stringProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="cacheKey">true</stringProp>
+            <stringProp name="script">def proxyHost = System.getProperty(&quot;https.proxyHost&quot;)
+def proxyPort = System.getProperty(&quot;https.proxyPort&quot;)
+def proxyUser = System.getProperty(&quot;https.proxyUser&quot;)
+def proxyPass = System.getProperty(&quot;https.proxyPassword&quot;)
+def proxyScheme = &quot;https&quot;
+
+import org.apache.jmeter.protocol.http.sampler.HTTPSamplerBase
+
+if (sampler instanceof HTTPSamplerBase) {
+    sampler.setDomain(proxyHost)
+    sampler.setPort(proxyPort)
+    sampler.setProtocol(proxyScheme)
+
+    if (proxyUser &amp;&amp; proxyPass) {
+        sampler.setProperty(&quot;HTTPSampler.proxyUser&quot;, proxyUser)
+        sampler.setProperty(&quot;HTTPSampler.proxyPass&quot;, proxyPass)
+    }
+
+    log.info(&quot;Applied proxy config to sampler: ${proxyHost}:${proxyPort} (${proxyScheme})&quot;)
+}
+</stringProp>
+          </JSR223PreProcessor>
+          <hashTree/>
           <JSR223PreProcessor guiclass="TestBeanGUI" testclass="JSR223PreProcessor" testname="Generate random GMR data" enabled="true">
             <stringProp name="scriptLanguage">groovy</stringProp>
             <stringProp name="parameters"></stringProp>
