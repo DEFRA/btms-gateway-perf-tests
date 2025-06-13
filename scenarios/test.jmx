@@ -37,14 +37,6 @@
           <stringProp name="cacheKey">true</stringProp>
           <stringProp name="script">System.setProperty(&quot;java.net.useSystemProxies&quot;, &quot;true&quot;)
 
-//log.info(&quot;===== JVM Proxy Properties =====&quot;)
-//System.getProperties().entrySet().each { entry -&gt;
-//    if (entry.key.toString().contains(&quot;proxy&quot;)) {
-//        log.info(&quot;${entry.key} = ${entry.value}&quot;)
-//    }
-//}
-
-
 def env = System.getenv(&quot;ENV&quot;) ?: &quot;NODEFAULT&quot;
 
 def expectedVars = [
@@ -56,6 +48,7 @@ def expectedVars = [
     &quot;TradeImportsDataApi__Protocol&quot;: &quot;https&quot;,
     &quot;TradeImportsDecisionComparer__Host&quot;: &quot;trade-imports-decision-comparer.${env}.cdp-int.defra.cloud&quot;,
     &quot;TradeImportsDecisionComparer__Protocol&quot;: &quot;https&quot;,
+    &quot;TradeImportsDecisionComparer__AuthToken&quot;: &quot;NODEFAULT&quot;,
     &quot;ServiceBus__Notifications__ConnectionString&quot;: &quot;NODEFAULT&quot;,  
     &quot;ServiceBus__Notifications__Protocol&quot;: &quot;https&quot;,
     &quot;ServiceBus__Gmrs__ConnectionString&quot;: &quot;NODEFAULT&quot;,  
@@ -66,47 +59,97 @@ expectedVars.each { key, defaultValue -&gt;
     def value = System.getenv(key) ?: defaultValue
     props.put(key, value)
     // log.info(&quot;Set JMeter prop: ${key} = ${value}&quot;)
-}</stringProp>
+}
+
+SampleResult.setIgnore()</stringProp>
+        </JSR223Sampler>
+        <hashTree/>
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Set ServiceBus Props">
+          <stringProp name="scriptLanguage">groovy</stringProp>
+          <stringProp name="parameters"></stringProp>
+          <stringProp name="filename"></stringProp>
+          <stringProp name="cacheKey">true</stringProp>
+          <stringProp name="script">import java.net.URLEncoder
+import javax.crypto.Mac
+import javax.crypto.spec.SecretKeySpec
+import java.util.Base64
+
+
+def asbConnections = [
+	&apos;ServiceBus__Notifications&apos;,
+	&apos;ServiceBus__Gmrs&apos;]
+
+asbConnections.each { conn -&gt;
+      setServiceBusVariables(conn)}
+
+SampleResult.setIgnore()
+
+def setServiceBusVariables(String connectionName) {
+
+	def asb = parseAsbConnectionString(props.get(connectionName + &quot;__ConnectionString&quot;))
+
+	def host = asb.Endpoint
+	def entityPath = asb.EntityPath
+	def fullUri = &quot;https://${host}/${entityPath}&quot;
+	def path = &quot;/${entityPath}/messages&quot;
+
+	props.put(connectionName + &quot;__Host&quot;, host)
+	log.info(props.get(connectionName + &quot;__Host&quot;))
+	props.put(connectionName + &quot;__Path&quot;, path)
+	props.put(connectionName + &quot;__ResourceUri&quot;, fullUri)
+	props.put(connectionName + &quot;__KeyName&quot;, asb.SharedAccessKeyName)
+	props.put(connectionName + &quot;__Key&quot;, asb.SharedAccessKey)
+
+
+	String key = asb.SharedAccessKey
+
+	int expiryInSeconds =  3600
+	long expiry = (System.currentTimeMillis() / 1000) + expiryInSeconds
+	String encodedUri = URLEncoder.encode(fullUri, &quot;UTF-8&quot;)
+	String stringToSign = &quot;${encodedUri}\n${expiry}&quot;
+
+	Mac hmac = Mac.getInstance(&quot;HmacSHA256&quot;)
+	SecretKeySpec secretKey = new SecretKeySpec(asb.SharedAccessKey.getBytes(&quot;UTF-8&quot;), &quot;HmacSHA256&quot;)
+	hmac.init(secretKey)
+	byte[] signatureBytes = hmac.doFinal(stringToSign.getBytes(&quot;UTF-8&quot;))
+	String encodedSignature = URLEncoder.encode(Base64.encoder.encodeToString(signatureBytes), &quot;UTF-8&quot;)
+
+	String token = &quot;SharedAccessSignature sr=${encodedUri}&amp;sig=${encodedSignature}&amp;se=${expiry}&amp;skn=${asb.SharedAccessKeyName}&quot;
+	props.put(connectionName + &quot;__AuthToken&quot;, token)
+
+	log.info(&quot;Generated SAS token for: ${entityPath}&quot;)
+}
+
+Map parseAsbConnectionString(String str) {
+    def map = [:]
+    str.split(&apos;;&apos;).each {
+        def kv = it.split(&apos;=&apos;, 2)
+        if (kv.length == 2) {
+            map[kv[0].trim()] = kv[1].trim()
+        }
+    }
+    if (map[&quot;Endpoint&quot;]) {
+        map[&quot;Endpoint&quot;] = map[&quot;Endpoint&quot;]
+            .replaceFirst(&quot;^sb://&quot;, &quot;&quot;)
+            .replaceAll(/\/$/, &quot;&quot;)
+    }
+    return map
+}
+</stringProp>
         </JSR223Sampler>
         <hashTree/>
       </hashTree>
       <OpenModelThreadGroup guiclass="OpenModelThreadGroupGui" testclass="OpenModelThreadGroup" testname="CDS/ALVS - Basic Scenario">
-        <stringProp name="OpenModelThreadGroup.schedule">rate(10/min) even_arrivals(1 min)</stringProp>
+        <stringProp name="OpenModelThreadGroup.schedule">rate(10/min) even_arrivals(1 min)  even_arrivals(1 min) rate(30/min) even_arrivals(1 min)  even_arrivals(1 min) rate(60/min) even_arrivals(1min)  even_arrivals(1 min) rate(120/min) even_arrivals(10 min)  even_arrivals(1 min) rate(240/min) even_arrivals(1 min)  even_arrivals(20 min)   </stringProp>
         <stringProp name="OpenModelThreadGroup.random_seed"> </stringProp>
         <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
         <elementProp name="ThreadGroup.main_controller" elementType="OpenModelThreadGroupController"/>
       </OpenModelThreadGroup>
       <hashTree>
-        <OnceOnlyController guiclass="OnceOnlyControllerGui" testclass="OnceOnlyController" testname="Initialise vars"/>
-        <hashTree>
-          <Arguments guiclass="ArgumentsPanel" testclass="Arguments" testname="Get Props" enabled="false">
-            <collectionProp name="Arguments.arguments">
-              <elementProp name="asb_connectionString" elementType="Argument">
-                <stringProp name="Argument.name">asb_connectionString</stringProp>
-                <stringProp name="Argument.value">${__groovy(props.get(&quot;ServiceBus__Gmrs__ConnectionStringl&quot;))}</stringProp>
-                <stringProp name="Argument.metadata">=</stringProp>
-              </elementProp>
-              <elementProp name="ServiceBusProtocol" elementType="Argument">
-                <stringProp name="Argument.name">ServiceBusProtocol</stringProp>
-                <stringProp name="Argument.value">${__groovy(props.get(&quot;ServiceBus__Gmrs__Protocol&quot;))}</stringProp>
-                <stringProp name="Argument.metadata">=</stringProp>
-              </elementProp>
-            </collectionProp>
-          </Arguments>
-          <hashTree/>
-          <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Parse ASB connection  string and get auth token" enabled="true">
-            <stringProp name="scriptLanguage">groovy</stringProp>
-            <stringProp name="parameters">${__groovy(props.get(&quot;ServiceBus__Notifications__ConnectionString&quot;))} ${__groovy(vars.get(&quot;asb_tokenExpirySecs&quot;) ?: &quot;3600&quot;)} </stringProp>
-            <stringProp name="filename">${__P(baseDir)}/scripts/generate-asb-vars.groovy</stringProp>
-            <stringProp name="cacheKey">true</stringProp>
-            <stringProp name="script"></stringProp>
-          </JSR223Sampler>
-          <hashTree/>
-        </hashTree>
         <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Send Notification">
-          <stringProp name="HTTPSampler.domain">${asb_host}</stringProp>
+          <stringProp name="HTTPSampler.domain">${__groovy(props.get(&apos;ServiceBus__Notifications__Host&apos;))}</stringProp>
           <stringProp name="HTTPSampler.protocol">https</stringProp>
-          <stringProp name="HTTPSampler.path">${asb_path}</stringProp>
+          <stringProp name="HTTPSampler.path">${__groovy(props.get(&quot;ServiceBus__Notifications__Path&quot;))}</stringProp>
           <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
           <stringProp name="HTTPSampler.method">POST</stringProp>
           <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
@@ -117,22 +160,358 @@ expectedVars.each { key, defaultValue -&gt;
                 <boolProp name="HTTPArgument.always_encode">false</boolProp>
                 <stringProp name="Argument.value">{&#xd;
   &quot;referenceNumber&quot;: &quot;${referenceNumber}&quot;,&#xd;
-  &quot;version&quot;: 2,&#xd;
-  &quot;lastUpdated&quot;: &quot;2025-06-02T12:11:00.003Z&quot;,&#xd;
+  &quot;version&quot;: 1,&#xd;
+  &quot;lastUpdated&quot;: &quot;${__time(yyyy-MM-dd&apos;T&apos;HH:mm:ss.SSS&apos;Z&apos;)}&quot;,&#xd;
   &quot;lastUpdatedBy&quot;: {&#xd;
-    &quot;displayName&quot;: &quot;6df819b220fdd6be2bfa865a3f2a844fd087a9131aac781ce534bdc63efc81d6&quot;,&#xd;
-    &quot;userId&quot;: &quot;b17dc1f7-307e-ee11-8179-000d3ab6fed7&quot;&#xd;
+    &quot;displayName&quot;: &quot;121b752eb2e43e1201ac433287387f83b604b4045ab489914d27b70d1eda7668&quot;,&#xd;
+    &quot;userId&quot;: &quot;3dd58971-2d3f-e911-a95d-000d3a454f67&quot;&#xd;
   },&#xd;
   &quot;type&quot;: &quot;CVEDA&quot;,&#xd;
-  &quot;status&quot;: &quot;VALIDATED&quot;,&#xd;
-  &quot;isHighRiskEuImport&quot;: true,  &#xd;
-  &quot;partTwo&quot;: {&#xd;
-            &quot;decision&quot;: {&#xd;
-              &quot;consignmentAcceptable&quot;: true,&#xd;
-              &quot;decision&quot;: &quot;Acceptable for Internal Market&quot;&#xd;
+  &quot;status&quot;: &quot;SUBMITTED&quot;,&#xd;
+  &quot;isHighRiskEuImport&quot;: false,&#xd;
+  &quot;partOne&quot;: {&#xd;
+    &quot;personResponsible&quot;: {&#xd;
+      &quot;name&quot;: &quot;d98e8c5c797ba62458fa57cf87bcf82f43abde97b76e1d0290da928b149a6c83&quot;,&#xd;
+      &quot;companyId&quot;: &quot;33accdd3-3e46-e911-a956-000d3a454330&quot;,&#xd;
+      &quot;companyName&quot;: &quot;61828cac3edbc7102316926bbebd3b44d6098e656e419fb943a437c4495119cb&quot;,&#xd;
+      &quot;address&quot;: [&#xd;
+        &quot;05cc788e548aafe1d69bbd9daa979e8d8e591b4a83b9c4ad0488aa02aa4de5eb&quot;,&#xd;
+        &quot;9c33953fc0e4bb0ca924858f396deb9f980316b967fac01719a05b218764464a&quot;,&#xd;
+        &quot;614178008af35a456f1533ecca8ec16959ebb17f4f5806be62999898ff6cda74&quot;,&#xd;
+        &quot;3ea54fe2b61490b10b0f4885a2c2f5b7b5038d912cdc5f716f3fc7241c27f72b&quot;&#xd;
+      ],&#xd;
+      &quot;country&quot;: &quot;GB&quot;,&#xd;
+      &quot;tracesID&quot;: 1001,&#xd;
+      &quot;phone&quot;: &quot;e312da9c45e934473bb39eaa343cb28a5dc9f37a44f9e3181a263b8b9c23e158&quot;,&#xd;
+      &quot;email&quot;: &quot;24f23bc2d21dd27a3c6e1cce57db5464ce0b2db08308eedf06f73ceb642f916c&quot;,&#xd;
+      &quot;contactId&quot;: &quot;dfb0eb26-3947-e911-a95e-000d3a454f67&quot;&#xd;
+    },&#xd;
+    &quot;consignor&quot;: {&#xd;
+      &quot;id&quot;: &quot;d297ddad-d8f3-4702-9944-8c1b61a3fe00&quot;,&#xd;
+      &quot;type&quot;: &quot;exporter&quot;,&#xd;
+      &quot;status&quot;: &quot;nonapproved&quot;,&#xd;
+      &quot;companyName&quot;: &quot;5773b816717b9b092c2c220aee782dde39bb7831b4d5edf58e0e9b32075627b1&quot;,&#xd;
+      &quot;address&quot;: {&#xd;
+        &quot;addressLine1&quot;: &quot;164f2fa51b32d0c536254f4148d5d08192e8532f29c9b5a96f948d1d76487f53&quot;,&#xd;
+        &quot;addressLine2&quot;: &quot;84fa335e16360ee2113f1dd42401c74add11ee8bd8ccea6e02b62fc1f2816cd7&quot;,&#xd;
+        &quot;city&quot;: &quot;ddf9ff833afd74c162d9cf0484dcd11e5be2ee1ac81425585e4c28d6b81d21e2&quot;,&#xd;
+        &quot;postalZipCode&quot;: &quot;1d3c538190d1d3e18f2a38a67e9ec172d1dd1dd02fb9487ea151e8bf08081f78&quot;,&#xd;
+        &quot;countryISOCode&quot;: &quot;387711c8993c6b04474abc46266e543de873dd91f54710a2d6aa06a5595f100d&quot;,&#xd;
+        &quot;telephone&quot;: &quot;9434c3ae3b04af080fc87166f4efb668755987ee271f869617f5df2e50dddfc7&quot;,&#xd;
+        &quot;email&quot;: &quot;4f16f32d9acc9024acdbdaf4eb3dabe4801c4384c57e57db0d4ffd419d5f2765&quot;&#xd;
+      },&#xd;
+      &quot;tracesId&quot;: 10002944&#xd;
+    },&#xd;
+    &quot;consignee&quot;: {&#xd;
+      &quot;id&quot;: &quot;85c438e6-3686-4062-bf9d-e1d58164a68c&quot;,&#xd;
+      &quot;type&quot;: &quot;consignee&quot;,&#xd;
+      &quot;status&quot;: &quot;nonapproved&quot;,&#xd;
+      &quot;companyName&quot;: &quot;34d858dcb0dcfa39d26fec243af9b70c00d114708a4ea7aef2c0a7ecf5c8da77&quot;,&#xd;
+      &quot;address&quot;: {&#xd;
+        &quot;addressLine1&quot;: &quot;fee87a8a5e72bb647983a993edd6a249576cf43fda2e1445404f466b6c559dd2&quot;,&#xd;
+        &quot;addressLine2&quot;: &quot;6d587ffc47984a864d0bed1f60039a3380af906882126c882147e254d4d88ef5&quot;,&#xd;
+        &quot;city&quot;: &quot;7dfaf1dacad4dc1299848bb874191cbfc58f3b89cf5fcdb886bc3d027a4cc196&quot;,&#xd;
+        &quot;postalZipCode&quot;: &quot;f548e7c9df24c1d6b012d6877e2244a197e46d47ff0ee3b2cd6acf6a48b65716&quot;,&#xd;
+        &quot;countryISOCode&quot;: &quot;4201fd485fee4ab1fd8d001c68d0aa0e6c5bb7fc81c5c4e088757c0060790b2e&quot;,&#xd;
+        &quot;telephone&quot;: &quot;9f1eb7fa757784e10e9df982dc6a6bb14364ff936b40c15a9658e8feedbd51cd&quot;,&#xd;
+        &quot;email&quot;: &quot;9b1f8ab97bccfba1d74cb42bee64deff2aeb0d0cd43803fb467b35c26066aa23&quot;&#xd;
+      },&#xd;
+      &quot;tracesId&quot;: 10002945&#xd;
+    },&#xd;
+    &quot;importer&quot;: {&#xd;
+      &quot;id&quot;: &quot;85c438e6-3686-4062-bf9d-e1d58164a68c&quot;,&#xd;
+      &quot;type&quot;: &quot;consignee&quot;,&#xd;
+      &quot;status&quot;: &quot;nonapproved&quot;,&#xd;
+      &quot;companyName&quot;: &quot;34d858dcb0dcfa39d26fec243af9b70c00d114708a4ea7aef2c0a7ecf5c8da77&quot;,&#xd;
+      &quot;address&quot;: {&#xd;
+        &quot;addressLine1&quot;: &quot;fee87a8a5e72bb647983a993edd6a249576cf43fda2e1445404f466b6c559dd2&quot;,&#xd;
+        &quot;addressLine2&quot;: &quot;6d587ffc47984a864d0bed1f60039a3380af906882126c882147e254d4d88ef5&quot;,&#xd;
+        &quot;city&quot;: &quot;7dfaf1dacad4dc1299848bb874191cbfc58f3b89cf5fcdb886bc3d027a4cc196&quot;,&#xd;
+        &quot;postalZipCode&quot;: &quot;f548e7c9df24c1d6b012d6877e2244a197e46d47ff0ee3b2cd6acf6a48b65716&quot;,&#xd;
+        &quot;countryISOCode&quot;: &quot;4201fd485fee4ab1fd8d001c68d0aa0e6c5bb7fc81c5c4e088757c0060790b2e&quot;,&#xd;
+        &quot;telephone&quot;: &quot;9f1eb7fa757784e10e9df982dc6a6bb14364ff936b40c15a9658e8feedbd51cd&quot;,&#xd;
+        &quot;email&quot;: &quot;9b1f8ab97bccfba1d74cb42bee64deff2aeb0d0cd43803fb467b35c26066aa23&quot;&#xd;
+      },&#xd;
+      &quot;tracesId&quot;: 10002945&#xd;
+    },&#xd;
+    &quot;placeOfDestination&quot;: {&#xd;
+      &quot;id&quot;: &quot;85c438e6-3686-4062-bf9d-e1d58164a68c&quot;,&#xd;
+      &quot;type&quot;: &quot;consignee&quot;,&#xd;
+      &quot;status&quot;: &quot;nonapproved&quot;,&#xd;
+      &quot;companyName&quot;: &quot;34d858dcb0dcfa39d26fec243af9b70c00d114708a4ea7aef2c0a7ecf5c8da77&quot;,&#xd;
+      &quot;address&quot;: {&#xd;
+        &quot;addressLine1&quot;: &quot;fee87a8a5e72bb647983a993edd6a249576cf43fda2e1445404f466b6c559dd2&quot;,&#xd;
+        &quot;addressLine2&quot;: &quot;6d587ffc47984a864d0bed1f60039a3380af906882126c882147e254d4d88ef5&quot;,&#xd;
+        &quot;city&quot;: &quot;7dfaf1dacad4dc1299848bb874191cbfc58f3b89cf5fcdb886bc3d027a4cc196&quot;,&#xd;
+        &quot;postalZipCode&quot;: &quot;f548e7c9df24c1d6b012d6877e2244a197e46d47ff0ee3b2cd6acf6a48b65716&quot;,&#xd;
+        &quot;countryISOCode&quot;: &quot;4201fd485fee4ab1fd8d001c68d0aa0e6c5bb7fc81c5c4e088757c0060790b2e&quot;,&#xd;
+        &quot;telephone&quot;: &quot;9f1eb7fa757784e10e9df982dc6a6bb14364ff936b40c15a9658e8feedbd51cd&quot;,&#xd;
+        &quot;email&quot;: &quot;9b1f8ab97bccfba1d74cb42bee64deff2aeb0d0cd43803fb467b35c26066aa23&quot;&#xd;
+      },&#xd;
+      &quot;tracesId&quot;: 10002945&#xd;
+    },&#xd;
+    &quot;commodities&quot;: {&#xd;
+      &quot;numberOfPackages&quot;: 10,&#xd;
+      &quot;numberOfAnimals&quot;: 4233,&#xd;
+      &quot;commodityComplement&quot;: [&#xd;
+        {&#xd;
+          &quot;commodityID&quot;: &quot;03011100&quot;,&#xd;
+          &quot;commodityDescription&quot;: &quot;Freshwater fish&quot;,&#xd;
+          &quot;complementID&quot;: 237020,&#xd;
+          &quot;complementName&quot;: &quot;Other freshwater fish&quot;,&#xd;
+          &quot;speciesID&quot;: &quot;300832&quot;,&#xd;
+          &quot;speciesName&quot;: &quot;Other freshwater fish&quot;,&#xd;
+          &quot;speciesType&quot;: &quot;2&quot;,&#xd;
+          &quot;speciesClass&quot;: &quot;315137&quot;,&#xd;
+          &quot;speciesNomination&quot;: &quot;Other freshwater fish&quot;,&#xd;
+          &quot;isCdsMatched&quot;: true&#xd;
+        },&#xd;
+        {&#xd;
+          &quot;commodityID&quot;: &quot;030760&quot;,&#xd;
+          &quot;commodityDescription&quot;: &quot;Snails, other than sea snails&quot;,&#xd;
+          &quot;complementID&quot;: 237024,&#xd;
+          &quot;complementName&quot;: &quot;Gasteropoda&quot;,&#xd;
+          &quot;speciesID&quot;: &quot;37579&quot;,&#xd;
+          &quot;speciesName&quot;: &quot;Gasteropoda&quot;,&#xd;
+          &quot;speciesTypeName&quot;: &quot;Aquarium&quot;,&#xd;
+          &quot;speciesType&quot;: &quot;1&quot;,&#xd;
+          &quot;speciesClass&quot;: &quot;37579&quot;,&#xd;
+          &quot;speciesNomination&quot;: &quot;Gasteropoda&quot;,&#xd;
+          &quot;isCdsMatched&quot;: true&#xd;
+        },&#xd;
+        {&#xd;
+          &quot;commodityID&quot;: &quot;03079100&quot;,&#xd;
+          &quot;commodityDescription&quot;: &quot;Live, fresh or chilled&quot;,&#xd;
+          &quot;complementID&quot;: 237026,&#xd;
+          &quot;complementName&quot;: &quot;Other Mollusca&quot;,&#xd;
+          &quot;speciesID&quot;: &quot;332694&quot;,&#xd;
+          &quot;speciesName&quot;: &quot;Other Mollusca&quot;,&#xd;
+          &quot;speciesTypeName&quot;: &quot;Aquarium&quot;,&#xd;
+          &quot;speciesType&quot;: &quot;1&quot;,&#xd;
+          &quot;speciesClass&quot;: &quot;36704&quot;,&#xd;
+          &quot;speciesNomination&quot;: &quot;Other Mollusca&quot;,&#xd;
+          &quot;isCdsMatched&quot;: true&#xd;
+        },&#xd;
+        {&#xd;
+          &quot;commodityID&quot;: &quot;03011900&quot;,&#xd;
+          &quot;commodityDescription&quot;: &quot;Other than 0301 11 00&quot;,&#xd;
+          &quot;complementID&quot;: 237027,&#xd;
+          &quot;complementName&quot;: &quot;Acanthurus leucosternon&quot;,&#xd;
+          &quot;speciesID&quot;: &quot;293770&quot;,&#xd;
+          &quot;speciesName&quot;: &quot;Acanthurus leucosternon&quot;,&#xd;
+          &quot;speciesType&quot;: &quot;2&quot;,&#xd;
+          &quot;speciesClass&quot;: &quot;133301&quot;,&#xd;
+          &quot;speciesNomination&quot;: &quot;Acanthurus leucosternon&quot;,&#xd;
+          &quot;isCdsMatched&quot;: true&#xd;
+        },&#xd;
+        {&#xd;
+          &quot;commodityID&quot;: &quot;03089010&quot;,&#xd;
+          &quot;commodityDescription&quot;: &quot;Live, fresh or chilled&quot;,&#xd;
+          &quot;complementID&quot;: 237028,&#xd;
+          &quot;complementName&quot;: &quot;Actiniaria&quot;,&#xd;
+          &quot;speciesID&quot;: &quot;160028&quot;,&#xd;
+          &quot;speciesName&quot;: &quot;Actiniaria&quot;,&#xd;
+          &quot;speciesTypeName&quot;: &quot;Aquarium&quot;,&#xd;
+          &quot;speciesType&quot;: &quot;1&quot;,&#xd;
+          &quot;speciesClass&quot;: &quot;133305&quot;,&#xd;
+          &quot;speciesNomination&quot;: &quot;Actiniaria&quot;,&#xd;
+          &quot;isCdsMatched&quot;: true&#xd;
+        }&#xd;
+      ],&#xd;
+      &quot;complementParameterSet&quot;: [&#xd;
+        {&#xd;
+          &quot;uniqueComplementID&quot;: &quot;ee2ff620-5b1c-4215-bcfe-16667b03b24c&quot;,&#xd;
+          &quot;complementID&quot;: 237020,&#xd;
+          &quot;speciesID&quot;: &quot;300832&quot;,&#xd;
+          &quot;keyDataPair&quot;: [&#xd;
+            {&#xd;
+              &quot;key&quot;: &quot;number_package&quot;,&#xd;
+              &quot;data&quot;: &quot;6&quot;&#xd;
             },&#xd;
-            &quot;inspectionRequired&quot;: &quot;Not required&quot;&#xd;
-          },&#xd;
+            {&#xd;
+              &quot;key&quot;: &quot;number_animal&quot;,&#xd;
+              &quot;data&quot;: &quot;4143&quot;&#xd;
+            }&#xd;
+          ]&#xd;
+        },&#xd;
+        {&#xd;
+          &quot;uniqueComplementID&quot;: &quot;9547a2c8-8cf7-4f01-ac86-3d14f7800749&quot;,&#xd;
+          &quot;complementID&quot;: 237024,&#xd;
+          &quot;speciesID&quot;: &quot;37579&quot;,&#xd;
+          &quot;keyDataPair&quot;: [&#xd;
+            {&#xd;
+              &quot;key&quot;: &quot;number_package&quot;,&#xd;
+              &quot;data&quot;: &quot;1&quot;&#xd;
+            },&#xd;
+            {&#xd;
+              &quot;key&quot;: &quot;number_animal&quot;,&#xd;
+              &quot;data&quot;: &quot;50&quot;&#xd;
+            }&#xd;
+          ]&#xd;
+        },&#xd;
+        {&#xd;
+          &quot;uniqueComplementID&quot;: &quot;09331178-6d2b-4f75-b37f-2fd81121e947&quot;,&#xd;
+          &quot;complementID&quot;: 237026,&#xd;
+          &quot;speciesID&quot;: &quot;332694&quot;,&#xd;
+          &quot;keyDataPair&quot;: [&#xd;
+            {&#xd;
+              &quot;key&quot;: &quot;number_package&quot;,&#xd;
+              &quot;data&quot;: &quot;1&quot;&#xd;
+            },&#xd;
+            {&#xd;
+              &quot;key&quot;: &quot;number_animal&quot;,&#xd;
+              &quot;data&quot;: &quot;10&quot;&#xd;
+            }&#xd;
+          ]&#xd;
+        },&#xd;
+        {&#xd;
+          &quot;uniqueComplementID&quot;: &quot;b92786d2-c85a-466c-b2cb-000e20ae7f1b&quot;,&#xd;
+          &quot;complementID&quot;: 237027,&#xd;
+          &quot;speciesID&quot;: &quot;293770&quot;,&#xd;
+          &quot;keyDataPair&quot;: [&#xd;
+            {&#xd;
+              &quot;key&quot;: &quot;number_package&quot;,&#xd;
+              &quot;data&quot;: &quot;1&quot;&#xd;
+            },&#xd;
+            {&#xd;
+              &quot;key&quot;: &quot;number_animal&quot;,&#xd;
+              &quot;data&quot;: &quot;25&quot;&#xd;
+            }&#xd;
+          ]&#xd;
+        },&#xd;
+        {&#xd;
+          &quot;uniqueComplementID&quot;: &quot;cf2f4291-3d12-41dd-8657-bb7cf1d669ee&quot;,&#xd;
+          &quot;complementID&quot;: 237028,&#xd;
+          &quot;speciesID&quot;: &quot;160028&quot;,&#xd;
+          &quot;keyDataPair&quot;: [&#xd;
+            {&#xd;
+              &quot;key&quot;: &quot;number_package&quot;,&#xd;
+              &quot;data&quot;: &quot;1&quot;&#xd;
+            },&#xd;
+            {&#xd;
+              &quot;key&quot;: &quot;number_animal&quot;,&#xd;
+              &quot;data&quot;: &quot;5&quot;&#xd;
+            }&#xd;
+          ]&#xd;
+        }&#xd;
+      ],&#xd;
+      &quot;includeNonAblactedAnimals&quot;: false,&#xd;
+      &quot;countryOfOrigin&quot;: &quot;LK&quot;,&#xd;
+      &quot;animalsCertifiedAs&quot;: &quot;Pets&quot;&#xd;
+    },&#xd;
+    &quot;purpose&quot;: {&#xd;
+      &quot;forImportOrAdmission&quot;: &quot;Definitive import&quot;,&#xd;
+      &quot;purposeGroup&quot;: &quot;For Re-Import&quot;&#xd;
+    },&#xd;
+    &quot;pointOfEntry&quot;: &quot;GBMNC4&quot;,&#xd;
+    &quot;arrivalDate&quot;: &quot;2024-12-04&quot;,&#xd;
+    &quot;arrivalTime&quot;: &quot;06:05:00&quot;,&#xd;
+    &quot;transporter&quot;: {&#xd;
+      &quot;id&quot;: &quot;cf265f1e-c0b8-487a-92dd-608f9e7d5766&quot;,&#xd;
+      &quot;type&quot;: &quot;commercial transporter&quot;,&#xd;
+      &quot;status&quot;: &quot;approved&quot;,&#xd;
+      &quot;companyName&quot;: &quot;70e287da66d7dfafec2c43443d87139b01902f983d104870066532de5c5541e0&quot;,&#xd;
+      &quot;individualName&quot;: &quot;965e1fc96c692fa8a24f089ad1d733ad5da6ba8c6d6321abaf64cd8ec3abbec0&quot;,&#xd;
+      &quot;approvalNumber&quot;: &quot;dddefd7c215a6bf0bda517d38938b17d203b90446fb67b6dd27e97896e00386c&quot;,&#xd;
+      &quot;address&quot;: {&#xd;
+        &quot;addressLine1&quot;: &quot;62e4effd1657661da941838c68bef45746805c7826648312466a1ae88833612c&quot;,&#xd;
+        &quot;addressLine2&quot;: &quot;663682a2f937c7b12176a78a3cbe3c42a2e4d00e32e58453a10d81960d4cecef&quot;,&#xd;
+        &quot;addressLine3&quot;: &quot;05cc788e548aafe1d69bbd9daa979e8d8e591b4a83b9c4ad0488aa02aa4de5eb&quot;,&#xd;
+        &quot;city&quot;: &quot;f046c94873953061c966173cc22645ed3b49fa5af7cbafee42e4258590b82510&quot;,&#xd;
+        &quot;postalZipCode&quot;: &quot;3ea54fe2b61490b10b0f4885a2c2f5b7b5038d912cdc5f716f3fc7241c27f72b&quot;,&#xd;
+        &quot;countryISOCode&quot;: &quot;4201fd485fee4ab1fd8d001c68d0aa0e6c5bb7fc81c5c4e088757c0060790b2e&quot;&#xd;
+      },&#xd;
+      &quot;tracesId&quot;: 10393170&#xd;
+    },&#xd;
+    &quot;meansOfTransport&quot;: {&#xd;
+      &quot;id&quot;: &quot;27e055d0a84efd377e14b42107bf877c4538154161ce703361513bb57cb0f0c7&quot;,&#xd;
+      &quot;type&quot;: &quot;Road Vehicle&quot;,&#xd;
+      &quot;document&quot;: &quot;97a96686266878ae37604d6130e89e04291f30abc20fc012ba632a1e9b1f7b0d&quot;&#xd;
+    },&#xd;
+    &quot;meansOfTransportFromEntryPoint&quot;: {&#xd;
+      &quot;id&quot;: &quot;c0f572432da3e33692250ceb88a3a183cc011d1e30207b7136d70580bd28c08c&quot;,&#xd;
+      &quot;type&quot;: &quot;Aeroplane&quot;,&#xd;
+      &quot;document&quot;: &quot;0699f2aec6df2aa1e89471d14fa3b0fee6882090af64f07720be4e6ddc61411b&quot;&#xd;
+    },&#xd;
+    &quot;departureDate&quot;: &quot;2024-12-04&quot;,&#xd;
+    &quot;departureTime&quot;: &quot;10:05:00&quot;,&#xd;
+    &quot;estimatedJourneyTimeInMinutes&quot;: 5,&#xd;
+    &quot;responsibleForTransport&quot;: &quot;Lincs Aquatics&quot;,&#xd;
+    &quot;veterinaryInformation&quot;: {&#xd;
+      &quot;accompanyingDocuments&quot;: [&#xd;
+        {&#xd;
+          &quot;documentType&quot;: &quot;latestVeterinaryHealthCertificate&quot;,&#xd;
+          &quot;documentReference&quot;: &quot;DAPH/VRA/4/1/4/1-(2024)-1764&quot;,&#xd;
+          &quot;documentIssueDate&quot;: &quot;2024-12-03&quot;,&#xd;
+          &quot;attachmentId&quot;: &quot;dbb75b5c-48a0-4d7e-a7da-0e27c500617d&quot;,&#xd;
+          &quot;attachmentFilename&quot;: &quot;Health Certificate and .pdf&quot;,&#xd;
+          &quot;attachmentContentType&quot;: &quot;application/pdf&quot;,&#xd;
+          &quot;uploadUserId&quot;: &quot;dfb0eb26-3947-e911-a95e-000d3a454f67&quot;,&#xd;
+          &quot;uploadOrganisationId&quot;: &quot;33accdd3-3e46-e911-a956-000d3a454330&quot;&#xd;
+        },&#xd;
+        {&#xd;
+          &quot;documentType&quot;: &quot;airWaybill&quot;,&#xd;
+          &quot;documentReference&quot;: &quot;157-38881975&quot;,&#xd;
+          &quot;documentIssueDate&quot;: &quot;2024-11-28&quot;,&#xd;
+          &quot;attachmentId&quot;: &quot;8fb9ff36-29e2-44ac-ba8c-f9cacbb03786&quot;,&#xd;
+          &quot;attachmentFilename&quot;: &quot;AWB.pdf&quot;,&#xd;
+          &quot;attachmentContentType&quot;: &quot;application/pdf&quot;,&#xd;
+          &quot;uploadUserId&quot;: &quot;dfb0eb26-3947-e911-a95e-000d3a454f67&quot;,&#xd;
+          &quot;uploadOrganisationId&quot;: &quot;33accdd3-3e46-e911-a956-000d3a454330&quot;&#xd;
+        }&#xd;
+      ],&#xd;
+      &quot;identificationDetails&quot;: [&#xd;
+        {}&#xd;
+      ]&#xd;
+    },&#xd;
+    &quot;route&quot;: {},&#xd;
+    &quot;submissionDate&quot;: &quot;2024-12-03T14:54:43.083764875Z&quot;,&#xd;
+    &quot;submittedBy&quot;: {&#xd;
+      &quot;displayName&quot;: &quot;d98e8c5c797ba62458fa57cf87bcf82f43abde97b76e1d0290da928b149a6c83&quot;,&#xd;
+      &quot;userId&quot;: &quot;dfb0eb26-3947-e911-a95e-000d3a454f67&quot;&#xd;
+    },&#xd;
+    &quot;complexCommoditySelected&quot;: true&#xd;
+  },&#xd;
+  &quot;decisionBy&quot;: {&#xd;
+    &quot;displayName&quot;: &quot;121b752eb2e43e1201ac433287387f83b604b4045ab489914d27b70d1eda7668&quot;,&#xd;
+    &quot;userId&quot;: &quot;3dd58971-2d3f-e911-a95d-000d3a454f67&quot;&#xd;
+  },&#xd;
+  &quot;decisionDate&quot;: &quot;2024-12-04T11:03:22.103167096Z&quot;,&#xd;
+  &quot;partTwo&quot;: {&#xd;
+    &quot;decision&quot;: {&#xd;
+      &quot;consignmentAcceptable&quot;: true,&#xd;
+      &quot;decision&quot;: &quot;Acceptable for Internal Market&quot;&#xd;
+    },&#xd;
+    &quot;consignmentCheck&quot;: {&#xd;
+      &quot;euStandard&quot;: &quot;Not Set&quot;,&#xd;
+      &quot;documentCheckResult&quot;: &quot;Satisfactory&quot;,&#xd;
+      &quot;nationalRequirements&quot;: &quot;Not Set&quot;,&#xd;
+      &quot;additionalGuarantees&quot;: &quot;Not Set&quot;,&#xd;
+      &quot;identityCheckResult&quot;: &quot;Satisfactory&quot;,&#xd;
+      &quot;physicalCheckResult&quot;: &quot;Satisfactory&quot;,&#xd;
+      &quot;welfareCheck&quot;: &quot;Satisfactory&quot;,&#xd;
+      &quot;numberOfAnimalsChecked&quot;: 505&#xd;
+    },&#xd;
+    &quot;impactOfTransportOnAnimals&quot;: {&#xd;
+      &quot;numberOfDeadAnimals&quot;: 2,&#xd;
+      &quot;numberOfDeadAnimalsUnit&quot;: &quot;number&quot;,&#xd;
+      &quot;numberOfUnfitAnimalsUnit&quot;: &quot;number&quot;&#xd;
+    },&#xd;
+    &quot;laboratoryTestsRequired&quot;: false,&#xd;
+    &quot;resealedContainersIncluded&quot;: false,&#xd;
+    &quot;controlAuthority&quot;: {&#xd;
+      &quot;officialVeterinarian&quot;: {&#xd;
+        &quot;firstName&quot;: &quot;551f01986d5c1a85381b920d37fb7563ec31720839babda2fa3b81b3bf2c3481&quot;,&#xd;
+        &quot;lastName&quot;: &quot;63e37aad07e6e7d285cbe93f96933423ca4b43db800662f803e570ec88f5b9d8&quot;,&#xd;
+        &quot;email&quot;: &quot;60391d5a51655a1fbe29db91367f49610c2259dbe3ef31eb623e85eb509d6c57&quot;,&#xd;
+        &quot;phone&quot;: &quot;c7fd4c237bcc57481e87de7624a6549527e7cbfcefb6f959e8f4cfed9fb4b5a2&quot;,&#xd;
+        &quot;signed&quot;: &quot;2024-12-04T11:03:22.1326946&quot;&#xd;
+      }&#xd;
+    },&#xd;
+    &quot;bipLocalReferenceNumber&quot;: &quot;f3317e6cc2881afb813f8dfcb21ce18d084e3d5c506c322a887caf70bc123e41&quot;&#xd;
+  },&#xd;
+  &quot;etag&quot;: &quot;0000000004504BB3&quot;,&#xd;
+  &quot;isCdsFullMatched&quot;: true,&#xd;
   &quot;chedTypeVersion&quot;: 1&#xd;
 }</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
@@ -141,7 +520,612 @@ expectedVars.each { key, defaultValue -&gt;
           </elementProp>
         </HTTPSamplerProxy>
         <hashTree>
-          <JSR223PreProcessor guiclass="TestBeanGUI" testclass="JSR223PreProcessor" testname="Generate random Notification data" enabled="true">
+          <JSR223PreProcessor guiclass="TestBeanGUI" testclass="JSR223PreProcessor" testname="Generate random Notification data">
+            <stringProp name="scriptLanguage">groovy</stringProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="cacheKey">true</stringProp>
+            <stringProp name="script">def suffix = String.format(&quot;%07d&quot;, new Random().nextInt(1_000_000))
+
+def ref = &quot;CHEDA.XX.2025.${suffix}&quot;
+//log.info(&apos;CHED: &apos; + ref)
+vars.put(&quot;referenceNumber&quot;, ref)</stringProp>
+          </JSR223PreProcessor>
+          <hashTree/>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="Headers" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">Authorization</stringProp>
+                <stringProp name="Header.value">${__groovy(props.get(&quot;ServiceBus__Notifications__AuthToken&quot;))}</stringProp>
+              </elementProp>
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">Content-Type</stringProp>
+                <stringProp name="Header.value">application/json</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+          <JSR223PostProcessor guiclass="TestBeanGUI" testclass="JSR223PostProcessor" testname="Update Sample Label" enabled="false">
+            <stringProp name="scriptLanguage">groovy</stringProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="cacheKey">true</stringProp>
+            <stringProp name="script">prev.responseData
+prev.setSampleLabel(&apos;Send Notification: &apos; + vars.get(&apos;referenceNumber&apos;))</stringProp>
+          </JSR223PostProcessor>
+          <hashTree/>
+          <JSR223PostProcessor guiclass="TestBeanGUI" testclass="JSR223PostProcessor" testname="Ignore" enabled="false">
+            <stringProp name="cacheKey">true</stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="script">prev.setIgnore()</stringProp>
+            <stringProp name="scriptLanguage">groovy</stringProp>
+          </JSR223PostProcessor>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Send Clearnace Request">
+          <stringProp name="HTTPSampler.domain">${__groovy(props.get(&apos;BtmsGateway__Host&apos;))}</stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.path">/ITSW/CDS/SubmitImportDocumentCDSFacadeService</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <stringProp name="HTTPSampler.method">PUT</stringProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">${soapBody}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <JSR223PreProcessor guiclass="TestBeanGUI" testclass="JSR223PreProcessor" testname="Prepare SOAP body">
+            <stringProp name="scriptLanguage">groovy</stringProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="cacheKey">true</stringProp>
+            <stringProp name="script">import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
+
+def timestamp = ZonedDateTime.now().withNano(0).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+def correlationId = (Math.floor(1e11 + Math.random() * 9e11) as long).toString()
+def entryRef = &quot;25GB&quot; + randomAlphanum(14)
+def declarationUCR = &quot;4GB979990102001-0160-${new Random().nextInt(90) + 10}&quot;
+def documentReference = vars.get(&apos;referenceNumber&apos;)
+
+vars.put(&quot;mrn&quot;,entryRef)
+
+def soapXml = &quot;&quot;&quot;
+&lt;soap:Envelope xmlns:soap=&quot;http://www.w3.org/2003/05/soap-envelope&quot;
+    xmlns:oas=&quot;http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd&quot;&gt;
+    &lt;soap:Header&gt;
+        &lt;oas:Security soap:role=&quot;system&quot; soap:mustUnderstand=&quot;true&quot;&gt;
+            &lt;oas:UsernameToken&gt;
+            &lt;/oas:UsernameToken&gt;
+        &lt;/oas:Security&gt;
+    &lt;/soap:Header&gt;
+    &lt;soap:Body&gt;
+        &lt;ALVSClearanceRequest xmlns=&quot;http://submitimportdocumenthmrcfacade.types.esb.ws.cara.defra.com&quot;&gt;
+            &lt;ServiceHeader&gt;
+                &lt;SourceSystem&gt;CDS&lt;/SourceSystem&gt;
+                &lt;DestinationSystem&gt;ALVS&lt;/DestinationSystem&gt;
+                &lt;CorrelationId&gt;${correlationId}&lt;/CorrelationId&gt;
+                &lt;ServiceCallTimestamp&gt;${timestamp}&lt;/ServiceCallTimestamp&gt;
+            &lt;/ServiceHeader&gt;
+            &lt;Header&gt;
+                &lt;EntryReference&gt;${entryRef}&lt;/EntryReference&gt;
+                &lt;EntryVersionNumber&gt;1&lt;/EntryVersionNumber&gt;
+                &lt;DeclarationUCR&gt;${declarationUCR}&lt;/DeclarationUCR&gt;
+                &lt;DeclarationType&gt;S&lt;/DeclarationType&gt;
+                &lt;SubmitterTURN&gt;GB998038429000&lt;/SubmitterTURN&gt;
+                &lt;DeclarantId&gt;GB998038429000&lt;/DeclarantId&gt;
+                &lt;DeclarantName&gt;GB998038429000&lt;/DeclarantName&gt;
+                &lt;DispatchCountryCode&gt;MA&lt;/DispatchCountryCode&gt;
+                &lt;GoodsLocationCode&gt;DEUDEUDEU&lt;/GoodsLocationCode&gt;
+            &lt;/Header&gt;
+            &lt;Item&gt;
+                &lt;ItemNumber&gt;1&lt;/ItemNumber&gt;
+                &lt;CustomsProcedureCode&gt;4000000&lt;/CustomsProcedureCode&gt;
+                &lt;TaricCommodityCode&gt;0301110000&lt;/TaricCommodityCode&gt;
+                &lt;GoodsDescription&gt;6 CARTONS OF LIVE FRESHWATER FISH&lt;/GoodsDescription&gt;
+                &lt;ConsigneeId&gt;GB999900746000&lt;/ConsigneeId&gt;
+                &lt;ConsigneeName&gt;GB999900746000&lt;/ConsigneeName&gt;
+                &lt;ItemNetMass&gt;150&lt;/ItemNetMass&gt;
+                &lt;ItemOriginCountryCode&gt;FR&lt;/ItemOriginCountryCode&gt;
+                &lt;Document&gt;
+                    &lt;DocumentCode&gt;C640&lt;/DocumentCode&gt;
+                    &lt;DocumentReference&gt;${documentReference}&lt;/DocumentReference&gt;
+                    &lt;DocumentStatus&gt;AE&lt;/DocumentStatus&gt;
+                    &lt;DocumentControl&gt;P&lt;/DocumentControl&gt;
+                &lt;/Document&gt;
+                &lt;Check&gt;
+                    &lt;CheckCode&gt;H221&lt;/CheckCode&gt;
+                    &lt;DepartmentCode&gt;AHVLA&lt;/DepartmentCode&gt;
+                &lt;/Check&gt;
+            &lt;/Item&gt;
+            &lt;Item&gt;
+                &lt;ItemNumber&gt;2&lt;/ItemNumber&gt;
+                &lt;CustomsProcedureCode&gt;4000000&lt;/CustomsProcedureCode&gt;
+                &lt;TaricCommodityCode&gt;0307600000&lt;/TaricCommodityCode&gt;
+                &lt;GoodsDescription&gt;1 CARTON OF LIVE SNAILS&lt;/GoodsDescription&gt;
+                &lt;ConsigneeId&gt;GB999900746000&lt;/ConsigneeId&gt;
+                &lt;ConsigneeName&gt;GB999900746000&lt;/ConsigneeName&gt;
+                &lt;ItemNetMass&gt;20&lt;/ItemNetMass&gt;
+                &lt;ItemOriginCountryCode&gt;FR&lt;/ItemOriginCountryCode&gt;
+                &lt;Document&gt;
+                    &lt;DocumentCode&gt;C640&lt;/DocumentCode&gt;
+                    &lt;DocumentReference&gt;${documentReference}&lt;/DocumentReference&gt;
+                    &lt;DocumentStatus&gt;AE&lt;/DocumentStatus&gt;
+                    &lt;DocumentControl&gt;P&lt;/DocumentControl&gt;
+                &lt;/Document&gt;
+                &lt;Check&gt;
+                    &lt;CheckCode&gt;H221&lt;/CheckCode&gt;
+                    &lt;DepartmentCode&gt;AHVLA&lt;/DepartmentCode&gt;
+                &lt;/Check&gt;
+            &lt;/Item&gt;
+            &lt;Item&gt;
+                &lt;ItemNumber&gt;3&lt;/ItemNumber&gt;
+                &lt;CustomsProcedureCode&gt;4000000&lt;/CustomsProcedureCode&gt;
+                &lt;TaricCommodityCode&gt;0301190000&lt;/TaricCommodityCode&gt;
+                &lt;GoodsDescription&gt;1 CARTON OF LIVE MARINE FISH&lt;/GoodsDescription&gt;
+                &lt;ConsigneeId&gt;GB999900746000&lt;/ConsigneeId&gt;
+                &lt;ConsigneeName&gt;GB999900746000&lt;/ConsigneeName&gt;
+                &lt;ItemNetMass&gt;27&lt;/ItemNetMass&gt;
+                &lt;ItemOriginCountryCode&gt;FR&lt;/ItemOriginCountryCode&gt;
+                &lt;Document&gt;
+                    &lt;DocumentCode&gt;C640&lt;/DocumentCode&gt;
+                    &lt;DocumentReference&gt;${documentReference}&lt;/DocumentReference&gt;
+                    &lt;DocumentStatus&gt;AE&lt;/DocumentStatus&gt;
+                    &lt;DocumentControl&gt;P&lt;/DocumentControl&gt;
+                &lt;/Document&gt;
+                &lt;Check&gt;
+                    &lt;CheckCode&gt;H221&lt;/CheckCode&gt;
+                    &lt;DepartmentCode&gt;AHVLA&lt;/DepartmentCode&gt;
+                &lt;/Check&gt;
+            &lt;/Item&gt;
+            &lt;Item&gt;
+                &lt;ItemNumber&gt;4&lt;/ItemNumber&gt;
+                &lt;CustomsProcedureCode&gt;4000000&lt;/CustomsProcedureCode&gt;
+                &lt;TaricCommodityCode&gt;0308901000&lt;/TaricCommodityCode&gt;
+                &lt;GoodsDescription&gt;1 CARTON OF LIVE INVERTEBRATES&lt;/GoodsDescription&gt;
+                &lt;ConsigneeId&gt;GB999900746000&lt;/ConsigneeId&gt;
+                &lt;ConsigneeName&gt;GB999900746000&lt;/ConsigneeName&gt;
+                &lt;ItemNetMass&gt;56&lt;/ItemNetMass&gt;
+                &lt;ItemOriginCountryCode&gt;FR&lt;/ItemOriginCountryCode&gt;
+                &lt;Document&gt;
+                    &lt;DocumentCode&gt;C640&lt;/DocumentCode&gt;
+                    &lt;DocumentReference&gt;${documentReference}&lt;/DocumentReference&gt;
+                    &lt;DocumentStatus&gt;AE&lt;/DocumentStatus&gt;
+                    &lt;DocumentControl&gt;P&lt;/DocumentControl&gt;
+                &lt;/Document&gt;
+                &lt;Check&gt;
+                    &lt;CheckCode&gt;H221&lt;/CheckCode&gt;
+                    &lt;DepartmentCode&gt;AHVLA&lt;/DepartmentCode&gt;
+                &lt;/Check&gt;
+            &lt;/Item&gt;
+            &lt;Item&gt;
+                &lt;ItemNumber&gt;5&lt;/ItemNumber&gt;
+                &lt;CustomsProcedureCode&gt;4000000&lt;/CustomsProcedureCode&gt;
+                &lt;TaricCommodityCode&gt;0307910099&lt;/TaricCommodityCode&gt;
+                &lt;GoodsDescription&gt;1 CARTON OF LIVE MOLLUSCS&lt;/GoodsDescription&gt;
+                &lt;ConsigneeId&gt;GB999900746000&lt;/ConsigneeId&gt;
+                &lt;ConsigneeName&gt;GB999900746000&lt;/ConsigneeName&gt;
+                &lt;ItemNetMass&gt;12&lt;/ItemNetMass&gt;
+                &lt;ItemOriginCountryCode&gt;FR&lt;/ItemOriginCountryCode&gt;
+                &lt;Document&gt;
+                    &lt;DocumentCode&gt;C640&lt;/DocumentCode&gt;
+                    &lt;DocumentReference&gt;${documentReference}&lt;/DocumentReference&gt;
+                    &lt;DocumentStatus&gt;AE&lt;/DocumentStatus&gt;
+                    &lt;DocumentControl&gt;P&lt;/DocumentControl&gt;
+                &lt;/Document&gt;
+                &lt;Check&gt;
+                    &lt;CheckCode&gt;H221&lt;/CheckCode&gt;
+                    &lt;DepartmentCode&gt;AHVLA&lt;/DepartmentCode&gt;
+                &lt;/Check&gt;
+            &lt;/Item&gt;
+         &lt;/ALVSClearanceRequest&gt;
+    &lt;/soap:Body&gt;
+&lt;/soap:Envelope&gt;
+&quot;&quot;&quot;
+
+vars.put(&quot;soapBody&quot;, soapXml)
+
+
+
+def randomAlphanum(len) {
+    def chars = (&apos;A&apos;..&apos;Z&apos;) + (&apos;0&apos;..&apos;9&apos;)
+    (1..len).collect { chars[new Random().nextInt(chars.size())] }.join()
+}
+</stringProp>
+          </JSR223PreProcessor>
+          <hashTree/>
+          <JSR223PostProcessor guiclass="TestBeanGUI" testclass="JSR223PostProcessor" testname="Update Sample Label" enabled="false">
+            <stringProp name="scriptLanguage">groovy</stringProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="cacheKey">true</stringProp>
+            <stringProp name="script">prev.setSampleLabel(&apos;Send Clearance Request: &apos; + vars.get(&apos;mrn&apos;))</stringProp>
+          </JSR223PostProcessor>
+          <hashTree/>
+        </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Send Notification Update">
+          <stringProp name="HTTPSampler.domain">${__groovy(props.get(&apos;ServiceBus__Notifications__Host&apos;))}</stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.path">${__groovy(props.get(&quot;ServiceBus__Notifications__Path&quot;))}</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <stringProp name="HTTPSampler.method">POST</stringProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">{&#xd;
+  &quot;referenceNumber&quot;: &quot;${referenceNumber}&quot;,&#xd;
+  &quot;version&quot;: 1,&#xd;
+  &quot;lastUpdated&quot;: &quot;${__time(yyyy-MM-dd&apos;T&apos;HH:mm:ss.SSS&apos;Z&apos;)}&quot;,&#xd;
+  &quot;lastUpdatedBy&quot;: {&#xd;
+    &quot;displayName&quot;: &quot;121b752eb2e43e1201ac433287387f83b604b4045ab489914d27b70d1eda7668&quot;,&#xd;
+    &quot;userId&quot;: &quot;3dd58971-2d3f-e911-a95d-000d3a454f67&quot;&#xd;
+  },&#xd;
+  &quot;type&quot;: &quot;CVEDA&quot;,&#xd;
+  &quot;status&quot;: &quot;VALIDATED&quot;,&#xd;
+  &quot;isHighRiskEuImport&quot;: false,&#xd;
+  &quot;partOne&quot;: {&#xd;
+    &quot;personResponsible&quot;: {&#xd;
+      &quot;name&quot;: &quot;d98e8c5c797ba62458fa57cf87bcf82f43abde97b76e1d0290da928b149a6c83&quot;,&#xd;
+      &quot;companyId&quot;: &quot;33accdd3-3e46-e911-a956-000d3a454330&quot;,&#xd;
+      &quot;companyName&quot;: &quot;61828cac3edbc7102316926bbebd3b44d6098e656e419fb943a437c4495119cb&quot;,&#xd;
+      &quot;address&quot;: [&#xd;
+        &quot;05cc788e548aafe1d69bbd9daa979e8d8e591b4a83b9c4ad0488aa02aa4de5eb&quot;,&#xd;
+        &quot;9c33953fc0e4bb0ca924858f396deb9f980316b967fac01719a05b218764464a&quot;,&#xd;
+        &quot;614178008af35a456f1533ecca8ec16959ebb17f4f5806be62999898ff6cda74&quot;,&#xd;
+        &quot;3ea54fe2b61490b10b0f4885a2c2f5b7b5038d912cdc5f716f3fc7241c27f72b&quot;&#xd;
+      ],&#xd;
+      &quot;country&quot;: &quot;GB&quot;,&#xd;
+      &quot;tracesID&quot;: 1001,&#xd;
+      &quot;phone&quot;: &quot;e312da9c45e934473bb39eaa343cb28a5dc9f37a44f9e3181a263b8b9c23e158&quot;,&#xd;
+      &quot;email&quot;: &quot;24f23bc2d21dd27a3c6e1cce57db5464ce0b2db08308eedf06f73ceb642f916c&quot;,&#xd;
+      &quot;contactId&quot;: &quot;dfb0eb26-3947-e911-a95e-000d3a454f67&quot;&#xd;
+    },&#xd;
+    &quot;consignor&quot;: {&#xd;
+      &quot;id&quot;: &quot;d297ddad-d8f3-4702-9944-8c1b61a3fe00&quot;,&#xd;
+      &quot;type&quot;: &quot;exporter&quot;,&#xd;
+      &quot;status&quot;: &quot;nonapproved&quot;,&#xd;
+      &quot;companyName&quot;: &quot;5773b816717b9b092c2c220aee782dde39bb7831b4d5edf58e0e9b32075627b1&quot;,&#xd;
+      &quot;address&quot;: {&#xd;
+        &quot;addressLine1&quot;: &quot;164f2fa51b32d0c536254f4148d5d08192e8532f29c9b5a96f948d1d76487f53&quot;,&#xd;
+        &quot;addressLine2&quot;: &quot;84fa335e16360ee2113f1dd42401c74add11ee8bd8ccea6e02b62fc1f2816cd7&quot;,&#xd;
+        &quot;city&quot;: &quot;ddf9ff833afd74c162d9cf0484dcd11e5be2ee1ac81425585e4c28d6b81d21e2&quot;,&#xd;
+        &quot;postalZipCode&quot;: &quot;1d3c538190d1d3e18f2a38a67e9ec172d1dd1dd02fb9487ea151e8bf08081f78&quot;,&#xd;
+        &quot;countryISOCode&quot;: &quot;387711c8993c6b04474abc46266e543de873dd91f54710a2d6aa06a5595f100d&quot;,&#xd;
+        &quot;telephone&quot;: &quot;9434c3ae3b04af080fc87166f4efb668755987ee271f869617f5df2e50dddfc7&quot;,&#xd;
+        &quot;email&quot;: &quot;4f16f32d9acc9024acdbdaf4eb3dabe4801c4384c57e57db0d4ffd419d5f2765&quot;&#xd;
+      },&#xd;
+      &quot;tracesId&quot;: 10002944&#xd;
+    },&#xd;
+    &quot;consignee&quot;: {&#xd;
+      &quot;id&quot;: &quot;85c438e6-3686-4062-bf9d-e1d58164a68c&quot;,&#xd;
+      &quot;type&quot;: &quot;consignee&quot;,&#xd;
+      &quot;status&quot;: &quot;nonapproved&quot;,&#xd;
+      &quot;companyName&quot;: &quot;34d858dcb0dcfa39d26fec243af9b70c00d114708a4ea7aef2c0a7ecf5c8da77&quot;,&#xd;
+      &quot;address&quot;: {&#xd;
+        &quot;addressLine1&quot;: &quot;fee87a8a5e72bb647983a993edd6a249576cf43fda2e1445404f466b6c559dd2&quot;,&#xd;
+        &quot;addressLine2&quot;: &quot;6d587ffc47984a864d0bed1f60039a3380af906882126c882147e254d4d88ef5&quot;,&#xd;
+        &quot;city&quot;: &quot;7dfaf1dacad4dc1299848bb874191cbfc58f3b89cf5fcdb886bc3d027a4cc196&quot;,&#xd;
+        &quot;postalZipCode&quot;: &quot;f548e7c9df24c1d6b012d6877e2244a197e46d47ff0ee3b2cd6acf6a48b65716&quot;,&#xd;
+        &quot;countryISOCode&quot;: &quot;4201fd485fee4ab1fd8d001c68d0aa0e6c5bb7fc81c5c4e088757c0060790b2e&quot;,&#xd;
+        &quot;telephone&quot;: &quot;9f1eb7fa757784e10e9df982dc6a6bb14364ff936b40c15a9658e8feedbd51cd&quot;,&#xd;
+        &quot;email&quot;: &quot;9b1f8ab97bccfba1d74cb42bee64deff2aeb0d0cd43803fb467b35c26066aa23&quot;&#xd;
+      },&#xd;
+      &quot;tracesId&quot;: 10002945&#xd;
+    },&#xd;
+    &quot;importer&quot;: {&#xd;
+      &quot;id&quot;: &quot;85c438e6-3686-4062-bf9d-e1d58164a68c&quot;,&#xd;
+      &quot;type&quot;: &quot;consignee&quot;,&#xd;
+      &quot;status&quot;: &quot;nonapproved&quot;,&#xd;
+      &quot;companyName&quot;: &quot;34d858dcb0dcfa39d26fec243af9b70c00d114708a4ea7aef2c0a7ecf5c8da77&quot;,&#xd;
+      &quot;address&quot;: {&#xd;
+        &quot;addressLine1&quot;: &quot;fee87a8a5e72bb647983a993edd6a249576cf43fda2e1445404f466b6c559dd2&quot;,&#xd;
+        &quot;addressLine2&quot;: &quot;6d587ffc47984a864d0bed1f60039a3380af906882126c882147e254d4d88ef5&quot;,&#xd;
+        &quot;city&quot;: &quot;7dfaf1dacad4dc1299848bb874191cbfc58f3b89cf5fcdb886bc3d027a4cc196&quot;,&#xd;
+        &quot;postalZipCode&quot;: &quot;f548e7c9df24c1d6b012d6877e2244a197e46d47ff0ee3b2cd6acf6a48b65716&quot;,&#xd;
+        &quot;countryISOCode&quot;: &quot;4201fd485fee4ab1fd8d001c68d0aa0e6c5bb7fc81c5c4e088757c0060790b2e&quot;,&#xd;
+        &quot;telephone&quot;: &quot;9f1eb7fa757784e10e9df982dc6a6bb14364ff936b40c15a9658e8feedbd51cd&quot;,&#xd;
+        &quot;email&quot;: &quot;9b1f8ab97bccfba1d74cb42bee64deff2aeb0d0cd43803fb467b35c26066aa23&quot;&#xd;
+      },&#xd;
+      &quot;tracesId&quot;: 10002945&#xd;
+    },&#xd;
+    &quot;placeOfDestination&quot;: {&#xd;
+      &quot;id&quot;: &quot;85c438e6-3686-4062-bf9d-e1d58164a68c&quot;,&#xd;
+      &quot;type&quot;: &quot;consignee&quot;,&#xd;
+      &quot;status&quot;: &quot;nonapproved&quot;,&#xd;
+      &quot;companyName&quot;: &quot;34d858dcb0dcfa39d26fec243af9b70c00d114708a4ea7aef2c0a7ecf5c8da77&quot;,&#xd;
+      &quot;address&quot;: {&#xd;
+        &quot;addressLine1&quot;: &quot;fee87a8a5e72bb647983a993edd6a249576cf43fda2e1445404f466b6c559dd2&quot;,&#xd;
+        &quot;addressLine2&quot;: &quot;6d587ffc47984a864d0bed1f60039a3380af906882126c882147e254d4d88ef5&quot;,&#xd;
+        &quot;city&quot;: &quot;7dfaf1dacad4dc1299848bb874191cbfc58f3b89cf5fcdb886bc3d027a4cc196&quot;,&#xd;
+        &quot;postalZipCode&quot;: &quot;f548e7c9df24c1d6b012d6877e2244a197e46d47ff0ee3b2cd6acf6a48b65716&quot;,&#xd;
+        &quot;countryISOCode&quot;: &quot;4201fd485fee4ab1fd8d001c68d0aa0e6c5bb7fc81c5c4e088757c0060790b2e&quot;,&#xd;
+        &quot;telephone&quot;: &quot;9f1eb7fa757784e10e9df982dc6a6bb14364ff936b40c15a9658e8feedbd51cd&quot;,&#xd;
+        &quot;email&quot;: &quot;9b1f8ab97bccfba1d74cb42bee64deff2aeb0d0cd43803fb467b35c26066aa23&quot;&#xd;
+      },&#xd;
+      &quot;tracesId&quot;: 10002945&#xd;
+    },&#xd;
+    &quot;commodities&quot;: {&#xd;
+      &quot;numberOfPackages&quot;: 10,&#xd;
+      &quot;numberOfAnimals&quot;: 4233,&#xd;
+      &quot;commodityComplement&quot;: [&#xd;
+        {&#xd;
+          &quot;commodityID&quot;: &quot;03011100&quot;,&#xd;
+          &quot;commodityDescription&quot;: &quot;Freshwater fish&quot;,&#xd;
+          &quot;complementID&quot;: 237020,&#xd;
+          &quot;complementName&quot;: &quot;Other freshwater fish&quot;,&#xd;
+          &quot;speciesID&quot;: &quot;300832&quot;,&#xd;
+          &quot;speciesName&quot;: &quot;Other freshwater fish&quot;,&#xd;
+          &quot;speciesType&quot;: &quot;2&quot;,&#xd;
+          &quot;speciesClass&quot;: &quot;315137&quot;,&#xd;
+          &quot;speciesNomination&quot;: &quot;Other freshwater fish&quot;,&#xd;
+          &quot;isCdsMatched&quot;: true&#xd;
+        },&#xd;
+        {&#xd;
+          &quot;commodityID&quot;: &quot;030760&quot;,&#xd;
+          &quot;commodityDescription&quot;: &quot;Snails, other than sea snails&quot;,&#xd;
+          &quot;complementID&quot;: 237024,&#xd;
+          &quot;complementName&quot;: &quot;Gasteropoda&quot;,&#xd;
+          &quot;speciesID&quot;: &quot;37579&quot;,&#xd;
+          &quot;speciesName&quot;: &quot;Gasteropoda&quot;,&#xd;
+          &quot;speciesTypeName&quot;: &quot;Aquarium&quot;,&#xd;
+          &quot;speciesType&quot;: &quot;1&quot;,&#xd;
+          &quot;speciesClass&quot;: &quot;37579&quot;,&#xd;
+          &quot;speciesNomination&quot;: &quot;Gasteropoda&quot;,&#xd;
+          &quot;isCdsMatched&quot;: true&#xd;
+        },&#xd;
+        {&#xd;
+          &quot;commodityID&quot;: &quot;03079100&quot;,&#xd;
+          &quot;commodityDescription&quot;: &quot;Live, fresh or chilled&quot;,&#xd;
+          &quot;complementID&quot;: 237026,&#xd;
+          &quot;complementName&quot;: &quot;Other Mollusca&quot;,&#xd;
+          &quot;speciesID&quot;: &quot;332694&quot;,&#xd;
+          &quot;speciesName&quot;: &quot;Other Mollusca&quot;,&#xd;
+          &quot;speciesTypeName&quot;: &quot;Aquarium&quot;,&#xd;
+          &quot;speciesType&quot;: &quot;1&quot;,&#xd;
+          &quot;speciesClass&quot;: &quot;36704&quot;,&#xd;
+          &quot;speciesNomination&quot;: &quot;Other Mollusca&quot;,&#xd;
+          &quot;isCdsMatched&quot;: true&#xd;
+        },&#xd;
+        {&#xd;
+          &quot;commodityID&quot;: &quot;03011900&quot;,&#xd;
+          &quot;commodityDescription&quot;: &quot;Other than 0301 11 00&quot;,&#xd;
+          &quot;complementID&quot;: 237027,&#xd;
+          &quot;complementName&quot;: &quot;Acanthurus leucosternon&quot;,&#xd;
+          &quot;speciesID&quot;: &quot;293770&quot;,&#xd;
+          &quot;speciesName&quot;: &quot;Acanthurus leucosternon&quot;,&#xd;
+          &quot;speciesType&quot;: &quot;2&quot;,&#xd;
+          &quot;speciesClass&quot;: &quot;133301&quot;,&#xd;
+          &quot;speciesNomination&quot;: &quot;Acanthurus leucosternon&quot;,&#xd;
+          &quot;isCdsMatched&quot;: true&#xd;
+        },&#xd;
+        {&#xd;
+          &quot;commodityID&quot;: &quot;03089010&quot;,&#xd;
+          &quot;commodityDescription&quot;: &quot;Live, fresh or chilled&quot;,&#xd;
+          &quot;complementID&quot;: 237028,&#xd;
+          &quot;complementName&quot;: &quot;Actiniaria&quot;,&#xd;
+          &quot;speciesID&quot;: &quot;160028&quot;,&#xd;
+          &quot;speciesName&quot;: &quot;Actiniaria&quot;,&#xd;
+          &quot;speciesTypeName&quot;: &quot;Aquarium&quot;,&#xd;
+          &quot;speciesType&quot;: &quot;1&quot;,&#xd;
+          &quot;speciesClass&quot;: &quot;133305&quot;,&#xd;
+          &quot;speciesNomination&quot;: &quot;Actiniaria&quot;,&#xd;
+          &quot;isCdsMatched&quot;: true&#xd;
+        }&#xd;
+      ],&#xd;
+      &quot;complementParameterSet&quot;: [&#xd;
+        {&#xd;
+          &quot;uniqueComplementID&quot;: &quot;ee2ff620-5b1c-4215-bcfe-16667b03b24c&quot;,&#xd;
+          &quot;complementID&quot;: 237020,&#xd;
+          &quot;speciesID&quot;: &quot;300832&quot;,&#xd;
+          &quot;keyDataPair&quot;: [&#xd;
+            {&#xd;
+              &quot;key&quot;: &quot;number_package&quot;,&#xd;
+              &quot;data&quot;: &quot;6&quot;&#xd;
+            },&#xd;
+            {&#xd;
+              &quot;key&quot;: &quot;number_animal&quot;,&#xd;
+              &quot;data&quot;: &quot;4143&quot;&#xd;
+            }&#xd;
+          ]&#xd;
+        },&#xd;
+        {&#xd;
+          &quot;uniqueComplementID&quot;: &quot;9547a2c8-8cf7-4f01-ac86-3d14f7800749&quot;,&#xd;
+          &quot;complementID&quot;: 237024,&#xd;
+          &quot;speciesID&quot;: &quot;37579&quot;,&#xd;
+          &quot;keyDataPair&quot;: [&#xd;
+            {&#xd;
+              &quot;key&quot;: &quot;number_package&quot;,&#xd;
+              &quot;data&quot;: &quot;1&quot;&#xd;
+            },&#xd;
+            {&#xd;
+              &quot;key&quot;: &quot;number_animal&quot;,&#xd;
+              &quot;data&quot;: &quot;50&quot;&#xd;
+            }&#xd;
+          ]&#xd;
+        },&#xd;
+        {&#xd;
+          &quot;uniqueComplementID&quot;: &quot;09331178-6d2b-4f75-b37f-2fd81121e947&quot;,&#xd;
+          &quot;complementID&quot;: 237026,&#xd;
+          &quot;speciesID&quot;: &quot;332694&quot;,&#xd;
+          &quot;keyDataPair&quot;: [&#xd;
+            {&#xd;
+              &quot;key&quot;: &quot;number_package&quot;,&#xd;
+              &quot;data&quot;: &quot;1&quot;&#xd;
+            },&#xd;
+            {&#xd;
+              &quot;key&quot;: &quot;number_animal&quot;,&#xd;
+              &quot;data&quot;: &quot;10&quot;&#xd;
+            }&#xd;
+          ]&#xd;
+        },&#xd;
+        {&#xd;
+          &quot;uniqueComplementID&quot;: &quot;b92786d2-c85a-466c-b2cb-000e20ae7f1b&quot;,&#xd;
+          &quot;complementID&quot;: 237027,&#xd;
+          &quot;speciesID&quot;: &quot;293770&quot;,&#xd;
+          &quot;keyDataPair&quot;: [&#xd;
+            {&#xd;
+              &quot;key&quot;: &quot;number_package&quot;,&#xd;
+              &quot;data&quot;: &quot;1&quot;&#xd;
+            },&#xd;
+            {&#xd;
+              &quot;key&quot;: &quot;number_animal&quot;,&#xd;
+              &quot;data&quot;: &quot;25&quot;&#xd;
+            }&#xd;
+          ]&#xd;
+        },&#xd;
+        {&#xd;
+          &quot;uniqueComplementID&quot;: &quot;cf2f4291-3d12-41dd-8657-bb7cf1d669ee&quot;,&#xd;
+          &quot;complementID&quot;: 237028,&#xd;
+          &quot;speciesID&quot;: &quot;160028&quot;,&#xd;
+          &quot;keyDataPair&quot;: [&#xd;
+            {&#xd;
+              &quot;key&quot;: &quot;number_package&quot;,&#xd;
+              &quot;data&quot;: &quot;1&quot;&#xd;
+            },&#xd;
+            {&#xd;
+              &quot;key&quot;: &quot;number_animal&quot;,&#xd;
+              &quot;data&quot;: &quot;5&quot;&#xd;
+            }&#xd;
+          ]&#xd;
+        }&#xd;
+      ],&#xd;
+      &quot;includeNonAblactedAnimals&quot;: false,&#xd;
+      &quot;countryOfOrigin&quot;: &quot;LK&quot;,&#xd;
+      &quot;animalsCertifiedAs&quot;: &quot;Pets&quot;&#xd;
+    },&#xd;
+    &quot;purpose&quot;: {&#xd;
+      &quot;forImportOrAdmission&quot;: &quot;Definitive import&quot;,&#xd;
+      &quot;purposeGroup&quot;: &quot;For Re-Import&quot;&#xd;
+    },&#xd;
+    &quot;pointOfEntry&quot;: &quot;GBMNC4&quot;,&#xd;
+    &quot;arrivalDate&quot;: &quot;2024-12-04&quot;,&#xd;
+    &quot;arrivalTime&quot;: &quot;06:05:00&quot;,&#xd;
+    &quot;transporter&quot;: {&#xd;
+      &quot;id&quot;: &quot;cf265f1e-c0b8-487a-92dd-608f9e7d5766&quot;,&#xd;
+      &quot;type&quot;: &quot;commercial transporter&quot;,&#xd;
+      &quot;status&quot;: &quot;approved&quot;,&#xd;
+      &quot;companyName&quot;: &quot;70e287da66d7dfafec2c43443d87139b01902f983d104870066532de5c5541e0&quot;,&#xd;
+      &quot;individualName&quot;: &quot;965e1fc96c692fa8a24f089ad1d733ad5da6ba8c6d6321abaf64cd8ec3abbec0&quot;,&#xd;
+      &quot;approvalNumber&quot;: &quot;dddefd7c215a6bf0bda517d38938b17d203b90446fb67b6dd27e97896e00386c&quot;,&#xd;
+      &quot;address&quot;: {&#xd;
+        &quot;addressLine1&quot;: &quot;62e4effd1657661da941838c68bef45746805c7826648312466a1ae88833612c&quot;,&#xd;
+        &quot;addressLine2&quot;: &quot;663682a2f937c7b12176a78a3cbe3c42a2e4d00e32e58453a10d81960d4cecef&quot;,&#xd;
+        &quot;addressLine3&quot;: &quot;05cc788e548aafe1d69bbd9daa979e8d8e591b4a83b9c4ad0488aa02aa4de5eb&quot;,&#xd;
+        &quot;city&quot;: &quot;f046c94873953061c966173cc22645ed3b49fa5af7cbafee42e4258590b82510&quot;,&#xd;
+        &quot;postalZipCode&quot;: &quot;3ea54fe2b61490b10b0f4885a2c2f5b7b5038d912cdc5f716f3fc7241c27f72b&quot;,&#xd;
+        &quot;countryISOCode&quot;: &quot;4201fd485fee4ab1fd8d001c68d0aa0e6c5bb7fc81c5c4e088757c0060790b2e&quot;&#xd;
+      },&#xd;
+      &quot;tracesId&quot;: 10393170&#xd;
+    },&#xd;
+    &quot;meansOfTransport&quot;: {&#xd;
+      &quot;id&quot;: &quot;27e055d0a84efd377e14b42107bf877c4538154161ce703361513bb57cb0f0c7&quot;,&#xd;
+      &quot;type&quot;: &quot;Road Vehicle&quot;,&#xd;
+      &quot;document&quot;: &quot;97a96686266878ae37604d6130e89e04291f30abc20fc012ba632a1e9b1f7b0d&quot;&#xd;
+    },&#xd;
+    &quot;meansOfTransportFromEntryPoint&quot;: {&#xd;
+      &quot;id&quot;: &quot;c0f572432da3e33692250ceb88a3a183cc011d1e30207b7136d70580bd28c08c&quot;,&#xd;
+      &quot;type&quot;: &quot;Aeroplane&quot;,&#xd;
+      &quot;document&quot;: &quot;0699f2aec6df2aa1e89471d14fa3b0fee6882090af64f07720be4e6ddc61411b&quot;&#xd;
+    },&#xd;
+    &quot;departureDate&quot;: &quot;2024-12-04&quot;,&#xd;
+    &quot;departureTime&quot;: &quot;10:05:00&quot;,&#xd;
+    &quot;estimatedJourneyTimeInMinutes&quot;: 5,&#xd;
+    &quot;responsibleForTransport&quot;: &quot;Lincs Aquatics&quot;,&#xd;
+    &quot;veterinaryInformation&quot;: {&#xd;
+      &quot;accompanyingDocuments&quot;: [&#xd;
+        {&#xd;
+          &quot;documentType&quot;: &quot;latestVeterinaryHealthCertificate&quot;,&#xd;
+          &quot;documentReference&quot;: &quot;DAPH/VRA/4/1/4/1-(2024)-1764&quot;,&#xd;
+          &quot;documentIssueDate&quot;: &quot;2024-12-03&quot;,&#xd;
+          &quot;attachmentId&quot;: &quot;dbb75b5c-48a0-4d7e-a7da-0e27c500617d&quot;,&#xd;
+          &quot;attachmentFilename&quot;: &quot;Health Certificate and .pdf&quot;,&#xd;
+          &quot;attachmentContentType&quot;: &quot;application/pdf&quot;,&#xd;
+          &quot;uploadUserId&quot;: &quot;dfb0eb26-3947-e911-a95e-000d3a454f67&quot;,&#xd;
+          &quot;uploadOrganisationId&quot;: &quot;33accdd3-3e46-e911-a956-000d3a454330&quot;&#xd;
+        },&#xd;
+        {&#xd;
+          &quot;documentType&quot;: &quot;airWaybill&quot;,&#xd;
+          &quot;documentReference&quot;: &quot;157-38881975&quot;,&#xd;
+          &quot;documentIssueDate&quot;: &quot;2024-11-28&quot;,&#xd;
+          &quot;attachmentId&quot;: &quot;8fb9ff36-29e2-44ac-ba8c-f9cacbb03786&quot;,&#xd;
+          &quot;attachmentFilename&quot;: &quot;AWB.pdf&quot;,&#xd;
+          &quot;attachmentContentType&quot;: &quot;application/pdf&quot;,&#xd;
+          &quot;uploadUserId&quot;: &quot;dfb0eb26-3947-e911-a95e-000d3a454f67&quot;,&#xd;
+          &quot;uploadOrganisationId&quot;: &quot;33accdd3-3e46-e911-a956-000d3a454330&quot;&#xd;
+        }&#xd;
+      ],&#xd;
+      &quot;identificationDetails&quot;: [&#xd;
+        {}&#xd;
+      ]&#xd;
+    },&#xd;
+    &quot;route&quot;: {},&#xd;
+    &quot;submissionDate&quot;: &quot;2024-12-03T14:54:43.083764875Z&quot;,&#xd;
+    &quot;submittedBy&quot;: {&#xd;
+      &quot;displayName&quot;: &quot;d98e8c5c797ba62458fa57cf87bcf82f43abde97b76e1d0290da928b149a6c83&quot;,&#xd;
+      &quot;userId&quot;: &quot;dfb0eb26-3947-e911-a95e-000d3a454f67&quot;&#xd;
+    },&#xd;
+    &quot;complexCommoditySelected&quot;: true&#xd;
+  },&#xd;
+  &quot;decisionBy&quot;: {&#xd;
+    &quot;displayName&quot;: &quot;121b752eb2e43e1201ac433287387f83b604b4045ab489914d27b70d1eda7668&quot;,&#xd;
+    &quot;userId&quot;: &quot;3dd58971-2d3f-e911-a95d-000d3a454f67&quot;&#xd;
+  },&#xd;
+  &quot;decisionDate&quot;: &quot;2024-12-04T11:03:22.103167096Z&quot;,&#xd;
+  &quot;partTwo&quot;: {&#xd;
+    &quot;decision&quot;: {&#xd;
+      &quot;consignmentAcceptable&quot;: true,&#xd;
+      &quot;decision&quot;: &quot;Acceptable for Internal Market&quot;&#xd;
+    },&#xd;
+    &quot;consignmentCheck&quot;: {&#xd;
+      &quot;euStandard&quot;: &quot;Not Set&quot;,&#xd;
+      &quot;documentCheckResult&quot;: &quot;Satisfactory&quot;,&#xd;
+      &quot;nationalRequirements&quot;: &quot;Not Set&quot;,&#xd;
+      &quot;additionalGuarantees&quot;: &quot;Not Set&quot;,&#xd;
+      &quot;identityCheckResult&quot;: &quot;Satisfactory&quot;,&#xd;
+      &quot;physicalCheckResult&quot;: &quot;Satisfactory&quot;,&#xd;
+      &quot;welfareCheck&quot;: &quot;Satisfactory&quot;,&#xd;
+      &quot;numberOfAnimalsChecked&quot;: 505&#xd;
+    },&#xd;
+    &quot;impactOfTransportOnAnimals&quot;: {&#xd;
+      &quot;numberOfDeadAnimals&quot;: 2,&#xd;
+      &quot;numberOfDeadAnimalsUnit&quot;: &quot;number&quot;,&#xd;
+      &quot;numberOfUnfitAnimalsUnit&quot;: &quot;number&quot;&#xd;
+    },&#xd;
+    &quot;laboratoryTestsRequired&quot;: false,&#xd;
+    &quot;resealedContainersIncluded&quot;: false,&#xd;
+    &quot;controlAuthority&quot;: {&#xd;
+      &quot;officialVeterinarian&quot;: {&#xd;
+        &quot;firstName&quot;: &quot;551f01986d5c1a85381b920d37fb7563ec31720839babda2fa3b81b3bf2c3481&quot;,&#xd;
+        &quot;lastName&quot;: &quot;63e37aad07e6e7d285cbe93f96933423ca4b43db800662f803e570ec88f5b9d8&quot;,&#xd;
+        &quot;email&quot;: &quot;60391d5a51655a1fbe29db91367f49610c2259dbe3ef31eb623e85eb509d6c57&quot;,&#xd;
+        &quot;phone&quot;: &quot;c7fd4c237bcc57481e87de7624a6549527e7cbfcefb6f959e8f4cfed9fb4b5a2&quot;,&#xd;
+        &quot;signed&quot;: &quot;2024-12-04T11:03:22.1326946&quot;&#xd;
+      }&#xd;
+    },&#xd;
+    &quot;bipLocalReferenceNumber&quot;: &quot;f3317e6cc2881afb813f8dfcb21ce18d084e3d5c506c322a887caf70bc123e41&quot;&#xd;
+  },&#xd;
+  &quot;etag&quot;: &quot;0000000004504BB3&quot;,&#xd;
+  &quot;isCdsFullMatched&quot;: true,&#xd;
+  &quot;chedTypeVersion&quot;: 1&#xd;
+}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <JSR223PreProcessor guiclass="TestBeanGUI" testclass="JSR223PreProcessor" testname="Generate random Notification data" enabled="false">
             <stringProp name="scriptLanguage">groovy</stringProp>
             <stringProp name="parameters"></stringProp>
             <stringProp name="filename"></stringProp>
@@ -153,11 +1137,11 @@ log.info(&apos;CHED: &apos; + ref)
 vars.put(&quot;referenceNumber&quot;, ref)</stringProp>
           </JSR223PreProcessor>
           <hashTree/>
-          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="Headers" enabled="true">
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="Headers">
             <collectionProp name="HeaderManager.headers">
               <elementProp name="" elementType="Header">
                 <stringProp name="Header.name">Authorization</stringProp>
-                <stringProp name="Header.value">${ASB_AUTH_TOKEN}</stringProp>
+                <stringProp name="Header.value">${__groovy(props.get(&quot;ServiceBus__Notifications__AuthToken&quot;))}</stringProp>
               </elementProp>
               <elementProp name="" elementType="Header">
                 <stringProp name="Header.name">Content-Type</stringProp>
@@ -166,21 +1150,27 @@ vars.put(&quot;referenceNumber&quot;, ref)</stringProp>
             </collectionProp>
           </HeaderManager>
           <hashTree/>
+          <JSR223PostProcessor guiclass="TestBeanGUI" testclass="JSR223PostProcessor" testname="Update Sample Label" enabled="false">
+            <stringProp name="scriptLanguage">groovy</stringProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="cacheKey">true</stringProp>
+            <stringProp name="script">prev.setSampleLabel(&apos;Send Notification: &apos; + vars.get(&apos;referenceNumber&apos;))</stringProp>
+          </JSR223PostProcessor>
+          <hashTree/>
+          <JSR223PostProcessor guiclass="TestBeanGUI" testclass="JSR223PostProcessor" testname="Ignore" enabled="false">
+            <stringProp name="cacheKey">true</stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="script">prev.setIgnore()</stringProp>
+            <stringProp name="scriptLanguage">groovy</stringProp>
+          </JSR223PostProcessor>
+          <hashTree/>
         </hashTree>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Send Clearnace Request" enabled="false">
-          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
-          <stringProp name="HTTPSampler.method">GET</stringProp>
-          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
-          <boolProp name="HTTPSampler.postBodyRaw">false</boolProp>
-          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
-            <collectionProp name="Arguments.arguments"/>
-          </elementProp>
-        </HTTPSamplerProxy>
-        <hashTree/>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Send Notification 2" enabled="false">
-          <stringProp name="HTTPSampler.domain">${__groovy(props.get(&quot;asb_host&quot;))}</stringProp>
-          <stringProp name="HTTPSampler.protocol">${__groovy(props.get(&quot;asb_protocol&quot;))}</stringProp>
-          <stringProp name="HTTPSampler.path">${__groovy(props.get(&quot;asb_path&quot;))}</stringProp>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Send ALVS Decision">
+          <stringProp name="HTTPSampler.domain">${__groovy(props.get(&apos;BtmsGateway__Host&apos;))}</stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.path">/ws/CDS/defra/alvsclearanceinbound/v1</stringProp>
           <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
           <stringProp name="HTTPSampler.method">POST</stringProp>
           <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
@@ -189,158 +1179,80 @@ vars.put(&quot;referenceNumber&quot;, ref)</stringProp>
             <collectionProp name="Arguments.arguments">
               <elementProp name="" elementType="HTTPArgument">
                 <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                <stringProp name="Argument.value">{&#xd;
-  &quot;referenceNumber&quot;: &quot;${referenceNumber}&quot;,&#xd;
-  &quot;version&quot;: 2,&#xd;
-  &quot;lastUpdated&quot;: &quot;2025-06-02T12:11:00.003Z&quot;,&#xd;
-  &quot;lastUpdatedBy&quot;: {&#xd;
-    &quot;displayName&quot;: &quot;6df819b220fdd6be2bfa865a3f2a844fd087a9131aac781ce534bdc63efc81d6&quot;,&#xd;
-    &quot;userId&quot;: &quot;b17dc1f7-307e-ee11-8179-000d3ab6fed7&quot;&#xd;
-  },&#xd;
-  &quot;type&quot;: &quot;CVEDA&quot;,&#xd;
-  &quot;status&quot;: &quot;VALIDATED&quot;,&#xd;
-  &quot;isHighRiskEuImport&quot;: true,  &#xd;
-  &quot;partTwo&quot;: {&#xd;
-            &quot;decision&quot;: {&#xd;
-              &quot;consignmentAcceptable&quot;: true,&#xd;
-              &quot;decision&quot;: &quot;Acceptable for Internal Market&quot;&#xd;
-            },&#xd;
-            &quot;inspectionRequired&quot;: &quot;Not required&quot;&#xd;
-          },&#xd;
-  &quot;chedTypeVersion&quot;: 1&#xd;
-}</stringProp>
+                <stringProp name="Argument.value">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;&#xd;
+&lt;NS1:Envelope xmlns:NS1=&quot;http://www.w3.org/2003/05/soap-envelope&quot;&gt;&#xd;
+  &lt;NS1:Header&gt;&#xd;
+    &lt;NS2:Security xmlns:NS2=&quot;http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd&quot; NS1:role=&quot;system&quot;&gt;&#xd;
+      &lt;NS2:UsernameToken&gt;&#xd;
+        &lt;NS2:Username&gt;ibmtest&lt;/NS2:Username&gt;&#xd;
+        &lt;NS2:Password&gt;password&lt;/NS2:Password&gt;&#xd;
+      &lt;/NS2:UsernameToken&gt;&#xd;
+    &lt;/NS2:Security&gt;&#xd;
+  &lt;/NS1:Header&gt;&#xd;
+  &lt;NS1:Body&gt;&#xd;
+    &lt;NS3:DecisionNotification xmlns:NS3=&quot;http://uk.gov.hmrc.ITSW2.ws&quot;&gt;&#xd;
+      &lt;NS2:DecisionNotification xmlns:NS2=&quot;http://www.hmrc.gov.uk/webservices/itsw/ws/decisionnotification&quot;&gt;&#xd;
+        &lt;NS2:ServiceHeader&gt;&#xd;
+          &lt;NS2:SourceSystem&gt;ALVS&lt;/NS2:SourceSystem&gt;&#xd;
+          &lt;NS2:DestinationSystem&gt;CDS&lt;/NS2:DestinationSystem&gt;&#xd;
+          &lt;NS2:CorrelationId&gt;238708176057&lt;/NS2:CorrelationId&gt;&#xd;
+          &lt;NS2:ServiceCallTimestamp&gt;2025-06-12T23:28:42.217&lt;/NS2:ServiceCallTimestamp&gt;&#xd;
+        &lt;/NS2:ServiceHeader&gt;&#xd;
+        &lt;NS2:Header&gt;&#xd;
+          &lt;NS2:EntryReference&gt;${mrn}&lt;/NS2:EntryReference&gt;&#xd;
+          &lt;NS2:EntryVersionNumber&gt;1&lt;/NS2:EntryVersionNumber&gt;&#xd;
+          &lt;NS2:DecisionNumber&gt;1&lt;/NS2:DecisionNumber&gt;&#xd;
+        &lt;/NS2:Header&gt;&#xd;
+        &lt;NS2:Item&gt;&#xd;
+          &lt;NS2:ItemNumber&gt;1&lt;/NS2:ItemNumber&gt;&#xd;
+          &lt;NS2:Check&gt;&#xd;
+            &lt;NS2:CheckCode&gt;H221&lt;/NS2:CheckCode&gt;&#xd;
+            &lt;NS2:DecisionCode&gt;C03&lt;/NS2:DecisionCode&gt;&#xd;
+          &lt;/NS2:Check&gt;&#xd;
+        &lt;/NS2:Item&gt;&#xd;
+        &lt;NS2:Item&gt;&#xd;
+          &lt;NS2:ItemNumber&gt;2&lt;/NS2:ItemNumber&gt;&#xd;
+          &lt;NS2:Check&gt;&#xd;
+            &lt;NS2:CheckCode&gt;H221&lt;/NS2:CheckCode&gt;&#xd;
+            &lt;NS2:DecisionCode&gt;C03&lt;/NS2:DecisionCode&gt;&#xd;
+          &lt;/NS2:Check&gt;&#xd;
+        &lt;/NS2:Item&gt;&#xd;
+        &lt;NS2:Item&gt;&#xd;
+          &lt;NS2:ItemNumber&gt;3&lt;/NS2:ItemNumber&gt;&#xd;
+          &lt;NS2:Check&gt;&#xd;
+            &lt;NS2:CheckCode&gt;H221&lt;/NS2:CheckCode&gt;&#xd;
+            &lt;NS2:DecisionCode&gt;C03&lt;/NS2:DecisionCode&gt;&#xd;
+          &lt;/NS2:Check&gt;&#xd;
+        &lt;/NS2:Item&gt;&#xd;
+        &lt;NS2:Item&gt;&#xd;
+          &lt;NS2:ItemNumber&gt;4&lt;/NS2:ItemNumber&gt;&#xd;
+          &lt;NS2:Check&gt;&#xd;
+            &lt;NS2:CheckCode&gt;H221&lt;/NS2:CheckCode&gt;&#xd;
+            &lt;NS2:DecisionCode&gt;C03&lt;/NS2:DecisionCode&gt;&#xd;
+          &lt;/NS2:Check&gt;&#xd;
+        &lt;/NS2:Item&gt;&#xd;
+        &lt;NS2:Item&gt;&#xd;
+          &lt;NS2:ItemNumber&gt;5&lt;/NS2:ItemNumber&gt;&#xd;
+          &lt;NS2:Check&gt;&#xd;
+            &lt;NS2:CheckCode&gt;H221&lt;/NS2:CheckCode&gt;&#xd;
+            &lt;NS2:DecisionCode&gt;C03&lt;/NS2:DecisionCode&gt;&#xd;
+          &lt;/NS2:Check&gt;&#xd;
+        &lt;/NS2:Item&gt;&#xd;
+      &lt;/NS2:DecisionNotification&gt;&#xd;
+    &lt;/NS3:DecisionNotification&gt;&#xd;
+  &lt;/NS1:Body&gt;&#xd;
+&lt;/NS1:Envelope&gt;&#xd;
+</stringProp>
                 <stringProp name="Argument.metadata">=</stringProp>
               </elementProp>
             </collectionProp>
           </elementProp>
         </HTTPSamplerProxy>
-        <hashTree>
-          <JSR223PreProcessor guiclass="TestBeanGUI" testclass="JSR223PreProcessor" testname="Generate random Notification data" enabled="true">
-            <stringProp name="scriptLanguage">groovy</stringProp>
-            <stringProp name="parameters"></stringProp>
-            <stringProp name="filename"></stringProp>
-            <stringProp name="cacheKey">true</stringProp>
-            <stringProp name="script">def suffix = String.format(&quot;%07d&quot;, new Random().nextInt(1_000_000))
-
-def ref = &quot;CHEDA.XX.2025.${suffix}&quot;
-log.info(&apos;CHED: &apos; + ref)
-vars.put(&quot;referenceNumber&quot;, ref)</stringProp>
-          </JSR223PreProcessor>
-          <hashTree/>
-          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="Headers" enabled="true">
-            <collectionProp name="HeaderManager.headers">
-              <elementProp name="" elementType="Header">
-                <stringProp name="Header.name">Authorization</stringProp>
-                <stringProp name="Header.value">${ASB_AUTH_TOKEN}</stringProp>
-              </elementProp>
-              <elementProp name="" elementType="Header">
-                <stringProp name="Header.name">Content-Type</stringProp>
-                <stringProp name="Header.value">application/json</stringProp>
-              </elementProp>
-            </collectionProp>
-          </HeaderManager>
-          <hashTree/>
-        </hashTree>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Send Clearnace Request" enabled="false">
-          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
-          <stringProp name="HTTPSampler.method">GET</stringProp>
-          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
-          <boolProp name="HTTPSampler.postBodyRaw">false</boolProp>
-          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
-            <collectionProp name="Arguments.arguments"/>
-          </elementProp>
-        </HTTPSamplerProxy>
         <hashTree/>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Send Finalisation" enabled="false">
-          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
-          <stringProp name="HTTPSampler.method">GET</stringProp>
-          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
-          <boolProp name="HTTPSampler.postBodyRaw">false</boolProp>
-          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
-            <collectionProp name="Arguments.arguments"/>
-          </elementProp>
-        </HTTPSamplerProxy>
-        <hashTree/>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Send ALVS Decision" enabled="false">
-          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
-          <stringProp name="HTTPSampler.method">GET</stringProp>
-          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
-          <boolProp name="HTTPSampler.postBodyRaw">false</boolProp>
-          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
-            <collectionProp name="Arguments.arguments"/>
-          </elementProp>
-        </HTTPSamplerProxy>
-        <hashTree/>
-      </hashTree>
-      <OpenModelThreadGroup guiclass="OpenModelThreadGroupGui" testclass="OpenModelThreadGroup" testname="CDS Errors" enabled="false">
-        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
-        <elementProp name="ThreadGroup.main_controller" elementType="OpenModelThreadGroupController"/>
-      </OpenModelThreadGroup>
-      <hashTree>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="HTTP Request" enabled="true">
-          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
-          <stringProp name="HTTPSampler.method">GET</stringProp>
-          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
-          <boolProp name="HTTPSampler.postBodyRaw">false</boolProp>
-          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
-            <collectionProp name="Arguments.arguments"/>
-          </elementProp>
-        </HTTPSamplerProxy>
-        <hashTree/>
-      </hashTree>
-      <OpenModelThreadGroup guiclass="OpenModelThreadGroupGui" testclass="OpenModelThreadGroup" testname="ALVS Errors" enabled="false">
-        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
-        <elementProp name="ThreadGroup.main_controller" elementType="OpenModelThreadGroupController"/>
-      </OpenModelThreadGroup>
-      <hashTree>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="HTTP Request" enabled="true">
-          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
-          <stringProp name="HTTPSampler.method">GET</stringProp>
-          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
-          <boolProp name="HTTPSampler.postBodyRaw">false</boolProp>
-          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
-            <collectionProp name="Arguments.arguments"/>
-          </elementProp>
-        </HTTPSamplerProxy>
-        <hashTree/>
-      </hashTree>
-      <OpenModelThreadGroup guiclass="OpenModelThreadGroupGui" testclass="OpenModelThreadGroup" testname="Gmrs">
-        <stringProp name="OpenModelThreadGroup.schedule">rate(10/min) even_arrivals(1 min)</stringProp>
-        <stringProp name="OpenModelThreadGroup.random_seed"> </stringProp>
-        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
-        <elementProp name="ThreadGroup.main_controller" elementType="OpenModelThreadGroupController"/>
-      </OpenModelThreadGroup>
-      <hashTree>
-        <OnceOnlyController guiclass="OnceOnlyControllerGui" testclass="OnceOnlyController" testname="Initialise vars"/>
-        <hashTree>
-          <Arguments guiclass="ArgumentsPanel" testclass="Arguments" testname="Get Props" enabled="false">
-            <collectionProp name="Arguments.arguments">
-              <elementProp name="asb_connectionString" elementType="Argument">
-                <stringProp name="Argument.name">asb_connectionString</stringProp>
-                <stringProp name="Argument.value">${__groovy(props.get(&quot;ServiceBus__Gmrs__ConnectionStringl&quot;))}</stringProp>
-                <stringProp name="Argument.metadata">=</stringProp>
-              </elementProp>
-              <elementProp name="ServiceBusProtocol" elementType="Argument">
-                <stringProp name="Argument.name">ServiceBusProtocol</stringProp>
-                <stringProp name="Argument.value">${__groovy(props.get(&quot;ServiceBus__Gmrs__Protocol&quot;))}</stringProp>
-                <stringProp name="Argument.metadata">=</stringProp>
-              </elementProp>
-            </collectionProp>
-          </Arguments>
-          <hashTree/>
-          <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Parse ASB connection  string and get auth token" enabled="true">
-            <stringProp name="scriptLanguage">groovy</stringProp>
-            <stringProp name="parameters">${__groovy(props.get(&quot;ServiceBus__Gmrs__ConnectionString&quot;))} ${__groovy(vars.get(&quot;asb_tokenExpirySecs&quot;) ?: &quot;3600&quot;)} </stringProp>
-            <stringProp name="filename">${__P(baseDir)}/scripts/generate-asb-vars.groovy</stringProp>
-            <stringProp name="cacheKey">true</stringProp>
-            <stringProp name="script"></stringProp>
-          </JSR223Sampler>
-          <hashTree/>
-        </hashTree>
         <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Send GMR">
-          <stringProp name="HTTPSampler.domain">${asb_host}</stringProp>
+          <stringProp name="HTTPSampler.domain">${__groovy(props.get(&apos;ServiceBus__Gmrs__Host&apos;))}</stringProp>
           <stringProp name="HTTPSampler.protocol">https</stringProp>
-          <stringProp name="HTTPSampler.path">${asb_path}</stringProp>
+          <stringProp name="HTTPSampler.path">${__groovy(props.get(&apos;ServiceBus__Gmrs__Path&apos;))}</stringProp>
           <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
           <stringProp name="HTTPSampler.method">POST</stringProp>
           <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
@@ -367,18 +1279,18 @@ vars.put(&quot;referenceNumber&quot;, ref)</stringProp>
   &quot;ContainerReferenceNums&quot;: null,&#xd;
   &quot;PlannedCrossing&quot;: {&#xd;
     &quot;RouteId&quot;: &quot;19&quot;,&#xd;
-    &quot;LocalDateTimeOfDeparture&quot;: &quot;2025-06-14T15:00:00.000Z&quot;&#xd;
+    &quot;LocalDateTimeOfDeparture&quot;: &quot;2025-02-13T14:25&quot;&#xd;
   },&#xd;
   &quot;CheckedInCrossing&quot;: {&#xd;
     &quot;RouteId&quot;: &quot;19&quot;,&#xd;
-    &quot;LocalDateTimeOfArrival&quot;: &quot;2025-06-15T15:00:00.000Z&quot;&#xd;
+    &quot;LocalDateTimeOfArrival&quot;: &quot;2025-02-13T14:25&quot;&#xd;
   },&#xd;
   &quot;ActualCrossing&quot;: null,&#xd;
   &quot;Declarations&quot;: {&#xd;
     &quot;Transits&quot;: null,&#xd;
     &quot;Customs&quot;: [&#xd;
       {&#xd;
-        &quot;Id&quot;: &quot;25ABCDEF1234567ABC&quot;&#xd;
+        &quot;Id&quot;: &quot;${mrn}}&quot;&#xd;
       }&#xd;
     ]&#xd;
   }&#xd;
@@ -389,7 +1301,7 @@ vars.put(&quot;referenceNumber&quot;, ref)</stringProp>
           </elementProp>
         </HTTPSamplerProxy>
         <hashTree>
-          <JSR223PreProcessor guiclass="TestBeanGUI" testclass="JSR223PreProcessor" testname="Generate random GMR data" enabled="true">
+          <JSR223PreProcessor guiclass="TestBeanGUI" testclass="JSR223PreProcessor" testname="Generate random GMR data">
             <stringProp name="scriptLanguage">groovy</stringProp>
             <stringProp name="parameters"></stringProp>
             <stringProp name="filename"></stringProp>
@@ -397,9 +1309,9 @@ vars.put(&quot;referenceNumber&quot;, ref)</stringProp>
             <stringProp name="script">def chars = (&apos;A&apos;..&apos;Z&apos;)  + (&apos;0&apos;..&apos;9&apos;)
 def suffix = (1..10).collect { chars[new Random().nextInt(chars.size())] }.join()
 
-def id = &quot;GMR.${suffix}&quot;
+def id = &quot;GMR${suffix}&quot;
 
-log.info(&quot;GMR id: &quot; + id)
+//log.info(&quot;GMR id: &quot; + id)
 vars.put(&quot;id&quot;, id)</stringProp>
           </JSR223PreProcessor>
           <hashTree/>
@@ -407,7 +1319,7 @@ vars.put(&quot;id&quot;, id)</stringProp>
             <collectionProp name="HeaderManager.headers">
               <elementProp name="" elementType="Header">
                 <stringProp name="Header.name">Authorization</stringProp>
-                <stringProp name="Header.value">${ASB_AUTH_TOKEN}</stringProp>
+                <stringProp name="Header.value">${__groovy(props.get(&quot;ServiceBus__Gmrs__AuthToken&quot;))}</stringProp>
               </elementProp>
               <elementProp name="" elementType="Header">
                 <stringProp name="Header.name">Content-Type</stringProp>
@@ -416,14 +1328,233 @@ vars.put(&quot;id&quot;, id)</stringProp>
             </collectionProp>
           </HeaderManager>
           <hashTree/>
+          <JSR223PostProcessor guiclass="TestBeanGUI" testclass="JSR223PostProcessor" testname="Update Sample Label" enabled="false">
+            <stringProp name="scriptLanguage">groovy</stringProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="cacheKey">true</stringProp>
+            <stringProp name="script">prev.setSampleLabel(&apos;Send GMR: &apos; + vars.get(&apos;id&apos;))</stringProp>
+          </JSR223PostProcessor>
+          <hashTree/>
+          <JSR223PostProcessor guiclass="TestBeanGUI" testclass="JSR223PostProcessor" testname="Ignore" enabled="false">
+            <stringProp name="cacheKey">true</stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="script">prev.setIgnore()</stringProp>
+            <stringProp name="scriptLanguage">groovy</stringProp>
+          </JSR223PostProcessor>
+          <hashTree/>
         </hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Send Finalisation">
+          <stringProp name="HTTPSampler.domain">${__groovy(props.get(&apos;BtmsGateway__Host&apos;))}</stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.path">/ITSW/CDS/NotifyFinalisedStateCDSFacadeService</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">&lt;?xml version=&quot;1.0&quot; encoding=&quot;utf-8&quot;?&gt;&#xd;
+&lt;soap:Envelope xmlns:soap=&quot;http://www.w3.org/2003/05/soap-envelope&quot;&#xd;
+    xmlns:oas=&quot;http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd&quot;&gt;&#xd;
+    &lt;soap:Header&gt;&#xd;
+        &lt;oas:Security soap:role=&quot;system&quot; soap:mustUnderstand=&quot;true&quot;&gt;&#xd;
+            &lt;oas:UsernameToken&gt;&#xd;
+                &lt;oas:Username&gt;systemID&amp;#x3D;ALVSHMRCCDS,ou&amp;#x3D;gsi systems,o&amp;#x3D;cds&lt;/oas:Username&gt;&#xd;
+                &lt;oas:Password Type=&quot;http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordText&quot;&gt;password&lt;/oas:Password&gt;&#xd;
+            &lt;/oas:UsernameToken&gt;&#xd;
+        &lt;/oas:Security&gt;&#xd;
+    &lt;/soap:Header&gt;&#xd;
+    &lt;soap:Body&gt;&#xd;
+        &lt;FinalisationNotificationRequest&#xd;
+            xmlns=&quot;http://notifyfinalisedstatehmrcfacade.types.esb.ws.cara.defra.com&quot;&gt;&#xd;
+            &lt;ServiceHeader&gt;&#xd;
+                &lt;SourceSystem&gt;CDS&lt;/SourceSystem&gt;&#xd;
+                &lt;DestinationSystem&gt;ALVS&lt;/DestinationSystem&gt;&#xd;
+                &lt;CorrelationId&gt;${__Random(100000000000,999999999999)}&lt;/CorrelationId&gt;&#xd;
+                &lt;ServiceCallTimestamp&gt;${__time(yyyy-MM-dd&apos;T&apos;HH:mm:ss.SSS&apos;Z&apos;)}&lt;/ServiceCallTimestamp&gt;&#xd;
+            &lt;/ServiceHeader&gt;&#xd;
+            &lt;Header&gt;&#xd;
+                &lt;EntryReference&gt;${mrn}&lt;/EntryReference&gt;&#xd;
+                &lt;EntryVersionNumber&gt;1&lt;/EntryVersionNumber&gt;&#xd;
+                &lt;DecisionNumber&gt;1&lt;/DecisionNumber&gt;&#xd;
+                &lt;FinalState&gt;0&lt;/FinalState&gt;&#xd;
+                &lt;ManualAction&gt;N&lt;/ManualAction&gt;&#xd;
+            &lt;/Header&gt;&#xd;
+        &lt;/FinalisationNotificationRequest&gt;&#xd;
+    &lt;/soap:Body&gt;&#xd;
+&lt;/soap:Envelope&gt;</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+        </HTTPSamplerProxy>
+        <hashTree/>
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Init Loop">
+          <stringProp name="scriptLanguage">groovy</stringProp>
+          <stringProp name="parameters"></stringProp>
+          <stringProp name="filename"></stringProp>
+          <stringProp name="cacheKey">true</stringProp>
+          <stringProp name="script">vars.put(&quot;pollStart&quot;, String.valueOf(System.currentTimeMillis()))
+vars.put(&quot;maxWait&quot;, &quot;20000&quot;) 
+vars.put(&quot;pollSuccess&quot;, &quot;false&quot;)
+vars.put(&quot;pollMatchValue&quot;, &quot;none&quot;)
+vars.put(&quot;pollError&quot;, &quot;false&quot;)
+SampleResult.setIgnore()</stringProp>
+        </JSR223Sampler>
+        <hashTree/>
+        <WhileController guiclass="WhileControllerGui" testclass="WhileController" testname="While Controller">
+          <stringProp name="WhileController.condition">${__groovy(
+    def start = vars.get(&quot;pollStart&quot;) as long
+    def maxWait = vars.get(&quot;maxWait&quot;) as long
+    def now = System.currentTimeMillis()
+    def success = vars.get(&quot;pollSuccess&quot;) == &apos;true&apos;
+    return (!success &amp;&amp; (now - start &lt; maxWait))
+)}</stringProp>
+        </WhileController>
+        <hashTree>
+          <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Constant Timer">
+            <stringProp name="ConstantTimer.delay">2000</stringProp>
+          </ConstantTimer>
+          <hashTree/>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Check Comparison">
+            <stringProp name="HTTPSampler.domain">${__groovy(props.get(&apos;TradeImportsDecisionComparer__Host&apos;))}</stringProp>
+            <stringProp name="HTTPSampler.protocol">https</stringProp>
+            <stringProp name="HTTPSampler.path">/comparisons/${mrn}</stringProp>
+            <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+            <stringProp name="HTTPSampler.method">GET</stringProp>
+            <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+            <boolProp name="HTTPSampler.postBodyRaw">false</boolProp>
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
+              <collectionProp name="Arguments.arguments"/>
+            </elementProp>
+          </HTTPSamplerProxy>
+          <hashTree>
+            <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager">
+              <collectionProp name="HeaderManager.headers">
+                <elementProp name="" elementType="Header">
+                  <stringProp name="Header.name">Authorization</stringProp>
+                  <stringProp name="Header.value">Basic ${__groovy(props.get(&apos;TradeImportsDecisionComparer__AuthToken&apos;))}</stringProp>
+                </elementProp>
+              </collectionProp>
+            </HeaderManager>
+            <hashTree/>
+            <JSR223PostProcessor guiclass="TestBeanGUI" testclass="JSR223PostProcessor" testname="Update Sample Label" enabled="false">
+              <stringProp name="scriptLanguage">groovy</stringProp>
+              <stringProp name="parameters"></stringProp>
+              <stringProp name="filename"></stringProp>
+              <stringProp name="cacheKey">true</stringProp>
+              <stringProp name="script">prev.setSampleLabel(&apos;Check Comparison: &apos; + vars.get(&apos;mrn&apos;))</stringProp>
+            </JSR223PostProcessor>
+            <hashTree/>
+            <JSR223PostProcessor guiclass="TestBeanGUI" testclass="JSR223PostProcessor" testname="Check Match">
+              <stringProp name="scriptLanguage">groovy</stringProp>
+              <stringProp name="parameters"></stringProp>
+              <stringProp name="filename"></stringProp>
+              <stringProp name="cacheKey">true</stringProp>
+              <stringProp name="script">import groovy.json.JsonSlurper
+
+try {
+    def responseCode = prev.getResponseCode()
+    def body = prev.getResponseDataAsString()
+
+    if (responseCode == &quot;200&quot;) {
+        def json = new JsonSlurper().parseText(body)
+        def match = json?.latest?.match
+
+        if (match != null) {
+            vars.put(&quot;pollMatchValue&quot;, match)
+            if (match == &quot;ExactMatch&quot;) {
+                vars.put(&quot;pollSuccess&quot;, &quot;true&quot;)
+            }
+        } else {
+            log.info(&quot;Match field not found in response.&quot;)
+        }
+    } else {
+        log.warn(&quot;Non-200 response: ${responseCode}&quot;)
+        vars.put(&quot;pollError&quot;, &quot;true&quot;)
+    }
+} catch (Exception e) {
+    log.error(&quot;Polling exception: &quot; + e.message)
+    vars.put(&quot;pollError&quot;, &quot;true&quot;)
+}</stringProp>
+            </JSR223PostProcessor>
+            <hashTree/>
+          </hashTree>
+        </hashTree>
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Check Result">
+          <stringProp name="scriptLanguage">groovy</stringProp>
+          <stringProp name="parameters"></stringProp>
+          <stringProp name="filename"></stringProp>
+          <stringProp name="cacheKey">true</stringProp>
+          <stringProp name="script">def success = vars.get(&quot;pollSuccess&quot;) == &quot;true&quot;
+def error = vars.get(&quot;pollError&quot;) == &quot;true&quot;
+def match = vars.get(&quot;pollMatchValue&quot;)
+def mrn = vars.get(&quot;mrn&quot;)
+
+if (success) {
+    SampleResult.setSuccessful(true)
+    SampleResult.setResponseMessage(&quot;Polling succeeded: match = ExactMatch, mrn: ${mrn}&quot;)
+} else if (error) {
+    SampleResult.setSuccessful(false)
+    SampleResult.setResponseCode(&quot;500&quot;)
+    SampleResult.setResponseMessage(&quot;Polling failed due to HTTP error or exception. mrn: ${mrn}&quot;)
+} else if (match != &quot;none&quot;) {
+    SampleResult.setSuccessful(false)
+    SampleResult.setResponseCode(&quot;400&quot;)
+    SampleResult.setResponseMessage(&quot;Polling completed but match = ${match} (not ExactMatch), mrn: ${mrn}&quot;)
+} else {
+    SampleResult.setSuccessful(false)
+    SampleResult.setResponseCode(&quot;400&quot;)
+    SampleResult.setResponseMessage(&quot;Polling timed out: no match field received, mrn: ${mrn}&quot;)
+}</stringProp>
+        </JSR223Sampler>
+        <hashTree/>
+      </hashTree>
+      <OpenModelThreadGroup guiclass="OpenModelThreadGroupGui" testclass="OpenModelThreadGroup" testname="CDS Errors" enabled="false">
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="OpenModelThreadGroupController"/>
+      </OpenModelThreadGroup>
+      <hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="HTTP Request" enabled="true">
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.postBodyRaw">false</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
+            <collectionProp name="Arguments.arguments"/>
+          </elementProp>
+        </HTTPSamplerProxy>
+        <hashTree/>
+      </hashTree>
+      <OpenModelThreadGroup guiclass="OpenModelThreadGroupGui" testclass="OpenModelThreadGroup" testname="ALVS Errors" enabled="false">
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="OpenModelThreadGroupController"/>
+      </OpenModelThreadGroup>
+      <hashTree>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="HTTP Request" enabled="true">
+          <stringProp name="HTTPSampler.domain">${__groovy(props.get(&apos;BtmsGateway__Host&apos;))}</stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.path">/ws/CDS/defra/alvsclearanceinbound/v1</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.postBodyRaw">false</boolProp>
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
+            <collectionProp name="Arguments.arguments"/>
+          </elementProp>
+        </HTTPSamplerProxy>
+        <hashTree/>
       </hashTree>
       <OpenModelThreadGroup guiclass="OpenModelThreadGroupGui" testclass="OpenModelThreadGroup" testname="UI Search Journey" enabled="false">
         <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
         <elementProp name="ThreadGroup.main_controller" elementType="OpenModelThreadGroupController"/>
       </OpenModelThreadGroup>
       <hashTree>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="HTTP Request">
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="HTTP Request" enabled="true">
           <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
           <stringProp name="HTTPSampler.method">GET</stringProp>
           <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
@@ -451,6 +1582,80 @@ vars.put(&quot;id&quot;, id)</stringProp>
         <hashTree/>
       </hashTree>
       <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="false">
+        <boolProp name="ResultCollector.error_logging">false</boolProp>
+        <objProp>
+          <name>saveConfig</name>
+          <value class="SampleSaveConfiguration">
+            <time>true</time>
+            <latency>true</latency>
+            <timestamp>true</timestamp>
+            <success>true</success>
+            <label>true</label>
+            <code>true</code>
+            <message>true</message>
+            <threadName>true</threadName>
+            <dataType>true</dataType>
+            <encoding>false</encoding>
+            <assertions>true</assertions>
+            <subresults>true</subresults>
+            <responseData>false</responseData>
+            <samplerData>false</samplerData>
+            <xml>false</xml>
+            <fieldNames>true</fieldNames>
+            <responseHeaders>false</responseHeaders>
+            <requestHeaders>false</requestHeaders>
+            <responseDataOnError>false</responseDataOnError>
+            <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+            <assertionsResultsToSave>0</assertionsResultsToSave>
+            <bytes>true</bytes>
+            <sentBytes>true</sentBytes>
+            <url>true</url>
+            <threadCounts>true</threadCounts>
+            <idleTime>true</idleTime>
+            <connectTime>true</connectTime>
+          </value>
+        </objProp>
+        <stringProp name="filename"></stringProp>
+      </ResultCollector>
+      <hashTree/>
+      <ResultCollector guiclass="TableVisualizer" testclass="ResultCollector" testname="View Results in Table" enabled="false">
+        <boolProp name="ResultCollector.error_logging">false</boolProp>
+        <objProp>
+          <name>saveConfig</name>
+          <value class="SampleSaveConfiguration">
+            <time>true</time>
+            <latency>true</latency>
+            <timestamp>true</timestamp>
+            <success>true</success>
+            <label>true</label>
+            <code>true</code>
+            <message>true</message>
+            <threadName>true</threadName>
+            <dataType>true</dataType>
+            <encoding>false</encoding>
+            <assertions>true</assertions>
+            <subresults>true</subresults>
+            <responseData>false</responseData>
+            <samplerData>false</samplerData>
+            <xml>false</xml>
+            <fieldNames>true</fieldNames>
+            <responseHeaders>false</responseHeaders>
+            <requestHeaders>false</requestHeaders>
+            <responseDataOnError>false</responseDataOnError>
+            <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
+            <assertionsResultsToSave>0</assertionsResultsToSave>
+            <bytes>true</bytes>
+            <sentBytes>true</sentBytes>
+            <url>true</url>
+            <threadCounts>true</threadCounts>
+            <idleTime>true</idleTime>
+            <connectTime>true</connectTime>
+          </value>
+        </objProp>
+        <stringProp name="filename"></stringProp>
+      </ResultCollector>
+      <hashTree/>
+      <ResultCollector guiclass="StatVisualizer" testclass="ResultCollector" testname="Aggregate Report" enabled="false">
         <boolProp name="ResultCollector.error_logging">false</boolProp>
         <objProp>
           <name>saveConfig</name>
