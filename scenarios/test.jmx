@@ -50,7 +50,7 @@
           <stringProp name="cacheKey">true</stringProp>
           <stringProp name="script">System.setProperty(&quot;java.net.useSystemProxies&quot;, &quot;true&quot;)
 
-def env = System.getenv(&quot;ENV&quot;) ?: &quot;NODEFAULT&quot;
+def env = System.getenv(&quot;ENV&quot;) ?: &quot;perf-test&quot;
 
 def expectedVars = [
     &quot;BtmsGateway__Host&quot; : &quot;btms-gateway.${env}.cdp-int.defra.cloud&quot;,
@@ -537,11 +537,12 @@ Map parseAsbConnectionString(String str) {
           <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
           <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
           <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+          <stringProp name="HTTPSampler.ipSource">${__P(https.proxyPassword,)}</stringProp>
           <stringProp name="HTTPSampler.proxyScheme">https</stringProp>
           <stringProp name="HTTPSampler.proxyHost">${__P(https.proxyHost,)}</stringProp>
           <stringProp name="HTTPSampler.proxyPort">${__P(https.proxyPort,)}</stringProp>
           <stringProp name="HTTPSampler.proxyUser">${__P(https.proxyUser,)}</stringProp>
-          <stringProp name="HTTPSampler.proxyPass">${__P(https.proxyPass,)}</stringProp>
+          <stringProp name="HTTPSampler.proxyPass">${__P(https.proxyPassword,)}</stringProp>
           <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
           <stringProp name="HTTPSampler.connect_timeout"></stringProp>
           <stringProp name="HTTPSampler.response_timeout"></stringProp>
@@ -1194,7 +1195,7 @@ def randomAlphanum(len) {
           <stringProp name="HTTPSampler.proxyHost">${__P(https.proxyHost,)}</stringProp>
           <stringProp name="HTTPSampler.proxyPort">${__P(https.proxyPort,)}</stringProp>
           <stringProp name="HTTPSampler.proxyUser">${__P(https.proxyUser,)}</stringProp>
-          <stringProp name="HTTPSampler.proxyPass">${__P(https.proxyPass,)}</stringProp>
+          <stringProp name="HTTPSampler.proxyPass">${__P(https.proxyPassword,)}</stringProp>
           <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
           <stringProp name="HTTPSampler.connect_timeout"></stringProp>
           <stringProp name="HTTPSampler.response_timeout"></stringProp>
@@ -1418,7 +1419,7 @@ vars.put(&quot;referenceNumber&quot;, ref)</stringProp>
           <stringProp name="HTTPSampler.proxyHost">${__P(https.proxyHost,)}</stringProp>
           <stringProp name="HTTPSampler.proxyPort">${__P(https.proxyPort,)}</stringProp>
           <stringProp name="HTTPSampler.proxyUser">${__P(https.proxyUser,)}</stringProp>
-          <stringProp name="HTTPSampler.proxyPass">${__P(https.proxyPass,)}</stringProp>
+          <stringProp name="HTTPSampler.proxyPass">${__P(https.proxyPassword,)}</stringProp>
           <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
           <stringProp name="HTTPSampler.connect_timeout"></stringProp>
           <stringProp name="HTTPSampler.response_timeout"></stringProp>
