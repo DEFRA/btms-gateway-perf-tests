@@ -20,7 +20,8 @@ mkdir -p ${JM_REPORTS} ${JM_LOGS}
 
 SCENARIOFILE=${JM_SCENARIOS}/${TEST_SCENARIO}.jmx
 REPORTFILE=${NOW}-perftest-${TEST_SCENARIO}-report.csv
-LOGFILE=${JM_LOGS}/perftest-${TEST_SCENARIO}.log
+LOGFILENAME=perftest-${TEST_SCENARIO}.log
+LOGFILE=${JM_LOGS}/${LOGFILENAME}
 
 # === PROXY CONFIGURATION ===
 
@@ -71,7 +72,7 @@ if [ -n "$RESULTS_OUTPUT_S3_PATH" ]; then
    if [ -f "$JM_REPORTS/index.html" ]; then
       aws --endpoint-url=$S3_ENDPOINT s3 cp "$REPORTFILE" "$RESULTS_OUTPUT_S3_PATH/$REPORTFILE"
       aws --endpoint-url=$S3_ENDPOINT s3 cp "$JM_REPORTS" "$RESULTS_OUTPUT_S3_PATH" --recursive
-      aws --endpoint-url=$S3_ENDPOINT s3 cp "$LOGFILE" "$RESULTS_OUTPUT_S3_PATH/$LOGFILE"
+      aws --endpoint-url=$S3_ENDPOINT s3 cp "$LOGFILE" "$RESULTS_OUTPUT_S3_PATH/$LOGFILENAME"
       if [ $? -eq 0 ]; then
         echo "CSV report file and test results published to $RESULTS_OUTPUT_S3_PATH"
       fi

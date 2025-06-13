@@ -50,7 +50,7 @@
           <stringProp name="cacheKey">true</stringProp>
           <stringProp name="script">System.setProperty(&quot;java.net.useSystemProxies&quot;, &quot;true&quot;)
 
-def env = System.getenv(&quot;ENV&quot;) ?: &quot;perf-test&quot;
+def env = System.getenv(&quot;ENVIRONMENT&quot;) ?: &quot;perf-test&quot;
 
 def expectedVars = [
     &quot;BtmsGateway__Host&quot; : &quot;btms-gateway.${env}.cdp-int.defra.cloud&quot;,
@@ -156,7 +156,7 @@ Map parseAsbConnectionString(String str) {
         <stringProp name="TestPlan.comments">rate(10/min) even_arrivals(1 min)  even_arrivals(1 min) rate(30/min) even_arrivals(1 min)  even_arrivals(1 min) rate(60/min) even_arrivals(1min)  even_arrivals(1 min) rate(120/min) even_arrivals(10 min)  even_arrivals(1 min) rate(240/min) even_arrivals(1 min)  even_arrivals(20 min) </stringProp>
         <stringProp name="OpenModelThreadGroup.schedule"> rate(10/min) even_arrivals(1 min) </stringProp>
         <stringProp name="OpenModelThreadGroup.random_seed"> </stringProp>
-        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <stringProp name="ThreadGroup.on_sample_error">startnextloop</stringProp>
         <elementProp name="ThreadGroup.main_controller" elementType="OpenModelThreadGroupController"/>
       </OpenModelThreadGroup>
       <hashTree>
