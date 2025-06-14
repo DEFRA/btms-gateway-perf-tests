@@ -166,209 +166,10 @@ Map parseAsbConnectionString(String str) {
           <boolProp name="TransactionController.parent">true</boolProp>
         </TransactionController>
         <hashTree>
-          <JSR223Timer guiclass="TestBeanGUI" testclass="JSR223Timer" testname="Pause before each sampler" enabled="true">
-            <stringProp name="cacheKey">true</stringProp>
-            <stringProp name="filename"></stringProp>
-            <stringProp name="parameters"></stringProp>
-            <stringProp name="script">return 10000</stringProp>
-            <stringProp name="scriptLanguage">groovy</stringProp>
-          </JSR223Timer>
+          <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Wait between each request" enabled="true">
+            <stringProp name="ConstantTimer.delay">10000</stringProp>
+          </ConstantTimer>
           <hashTree/>
-          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Send Clearnace Request" enabled="true">
-            <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
-            <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
-              <collectionProp name="Arguments.arguments">
-                <elementProp name="" elementType="HTTPArgument">
-                  <boolProp name="HTTPArgument.always_encode">false</boolProp>
-                  <stringProp name="Argument.value">${soapBody}</stringProp>
-                  <stringProp name="Argument.metadata">=</stringProp>
-                </elementProp>
-              </collectionProp>
-            </elementProp>
-            <stringProp name="HTTPSampler.domain">${__groovy(props.get(&apos;BtmsGateway__Host&apos;))}</stringProp>
-            <stringProp name="HTTPSampler.port"></stringProp>
-            <stringProp name="HTTPSampler.protocol">https</stringProp>
-            <stringProp name="HTTPSampler.contentEncoding"></stringProp>
-            <stringProp name="HTTPSampler.path">/ITSW/CDS/SubmitImportDocumentCDSFacadeService</stringProp>
-            <stringProp name="HTTPSampler.method">PUT</stringProp>
-            <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
-            <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
-            <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
-            <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
-            <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
-            <stringProp name="HTTPSampler.connect_timeout"></stringProp>
-            <stringProp name="HTTPSampler.response_timeout"></stringProp>
-          </HTTPSamplerProxy>
-          <hashTree>
-            <JSR223PreProcessor guiclass="TestBeanGUI" testclass="JSR223PreProcessor" testname="Prepare SOAP body" enabled="true">
-              <stringProp name="scriptLanguage">groovy</stringProp>
-              <stringProp name="parameters"></stringProp>
-              <stringProp name="filename"></stringProp>
-              <stringProp name="cacheKey">true</stringProp>
-              <stringProp name="script">import java.time.ZonedDateTime
-import java.time.format.DateTimeFormatter
-
-def timestamp = ZonedDateTime.now().withNano(0).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-def correlationId = (Math.floor(1e11 + Math.random() * 9e11) as long).toString()
-def entryRef = &quot;25GB&quot; + randomAlphanum(14)
-def declarationUCR = &quot;4GB979990102001-0160-${new Random().nextInt(90) + 10}&quot;
-def documentReference = vars.get(&apos;referenceNumber&apos;)
-
-vars.put(&quot;mrn&quot;,entryRef)
-
-def soapXml = &quot;&quot;&quot;
-&lt;soap:Envelope xmlns:soap=&quot;http://www.w3.org/2003/05/soap-envelope&quot;
-    xmlns:oas=&quot;http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd&quot;&gt;
-    &lt;soap:Header&gt;
-        &lt;oas:Security soap:role=&quot;system&quot; soap:mustUnderstand=&quot;true&quot;&gt;
-            &lt;oas:UsernameToken&gt;
-            &lt;/oas:UsernameToken&gt;
-        &lt;/oas:Security&gt;
-    &lt;/soap:Header&gt;
-    &lt;soap:Body&gt;
-        &lt;ALVSClearanceRequest xmlns=&quot;http://submitimportdocumenthmrcfacade.types.esb.ws.cara.defra.com&quot;&gt;
-            &lt;ServiceHeader&gt;
-                &lt;SourceSystem&gt;CDS&lt;/SourceSystem&gt;
-                &lt;DestinationSystem&gt;ALVS&lt;/DestinationSystem&gt;
-                &lt;CorrelationId&gt;${correlationId}&lt;/CorrelationId&gt;
-                &lt;ServiceCallTimestamp&gt;${timestamp}&lt;/ServiceCallTimestamp&gt;
-            &lt;/ServiceHeader&gt;
-            &lt;Header&gt;
-                &lt;EntryReference&gt;${entryRef}&lt;/EntryReference&gt;
-                &lt;EntryVersionNumber&gt;1&lt;/EntryVersionNumber&gt;
-                &lt;DeclarationUCR&gt;${declarationUCR}&lt;/DeclarationUCR&gt;
-                &lt;DeclarationType&gt;S&lt;/DeclarationType&gt;
-                &lt;SubmitterTURN&gt;GB998038429000&lt;/SubmitterTURN&gt;
-                &lt;DeclarantId&gt;GB998038429000&lt;/DeclarantId&gt;
-                &lt;DeclarantName&gt;GB998038429000&lt;/DeclarantName&gt;
-                &lt;DispatchCountryCode&gt;MA&lt;/DispatchCountryCode&gt;
-                &lt;GoodsLocationCode&gt;DEUDEUDEU&lt;/GoodsLocationCode&gt;
-            &lt;/Header&gt;
-            &lt;Item&gt;
-                &lt;ItemNumber&gt;1&lt;/ItemNumber&gt;
-                &lt;CustomsProcedureCode&gt;4000000&lt;/CustomsProcedureCode&gt;
-                &lt;TaricCommodityCode&gt;0301110000&lt;/TaricCommodityCode&gt;
-                &lt;GoodsDescription&gt;6 CARTONS OF LIVE FRESHWATER FISH&lt;/GoodsDescription&gt;
-                &lt;ConsigneeId&gt;GB999900746000&lt;/ConsigneeId&gt;
-                &lt;ConsigneeName&gt;GB999900746000&lt;/ConsigneeName&gt;
-                &lt;ItemNetMass&gt;150&lt;/ItemNetMass&gt;
-                &lt;ItemOriginCountryCode&gt;FR&lt;/ItemOriginCountryCode&gt;
-                &lt;Document&gt;
-                    &lt;DocumentCode&gt;C640&lt;/DocumentCode&gt;
-                    &lt;DocumentReference&gt;${documentReference}&lt;/DocumentReference&gt;
-                    &lt;DocumentStatus&gt;AE&lt;/DocumentStatus&gt;
-                    &lt;DocumentControl&gt;P&lt;/DocumentControl&gt;
-                &lt;/Document&gt;
-                &lt;Check&gt;
-                    &lt;CheckCode&gt;H221&lt;/CheckCode&gt;
-                    &lt;DepartmentCode&gt;AHVLA&lt;/DepartmentCode&gt;
-                &lt;/Check&gt;
-            &lt;/Item&gt;
-            &lt;Item&gt;
-                &lt;ItemNumber&gt;2&lt;/ItemNumber&gt;
-                &lt;CustomsProcedureCode&gt;4000000&lt;/CustomsProcedureCode&gt;
-                &lt;TaricCommodityCode&gt;0307600000&lt;/TaricCommodityCode&gt;
-                &lt;GoodsDescription&gt;1 CARTON OF LIVE SNAILS&lt;/GoodsDescription&gt;
-                &lt;ConsigneeId&gt;GB999900746000&lt;/ConsigneeId&gt;
-                &lt;ConsigneeName&gt;GB999900746000&lt;/ConsigneeName&gt;
-                &lt;ItemNetMass&gt;20&lt;/ItemNetMass&gt;
-                &lt;ItemOriginCountryCode&gt;FR&lt;/ItemOriginCountryCode&gt;
-                &lt;Document&gt;
-                    &lt;DocumentCode&gt;C640&lt;/DocumentCode&gt;
-                    &lt;DocumentReference&gt;${documentReference}&lt;/DocumentReference&gt;
-                    &lt;DocumentStatus&gt;AE&lt;/DocumentStatus&gt;
-                    &lt;DocumentControl&gt;P&lt;/DocumentControl&gt;
-                &lt;/Document&gt;
-                &lt;Check&gt;
-                    &lt;CheckCode&gt;H221&lt;/CheckCode&gt;
-                    &lt;DepartmentCode&gt;AHVLA&lt;/DepartmentCode&gt;
-                &lt;/Check&gt;
-            &lt;/Item&gt;
-            &lt;Item&gt;
-                &lt;ItemNumber&gt;3&lt;/ItemNumber&gt;
-                &lt;CustomsProcedureCode&gt;4000000&lt;/CustomsProcedureCode&gt;
-                &lt;TaricCommodityCode&gt;0301190000&lt;/TaricCommodityCode&gt;
-                &lt;GoodsDescription&gt;1 CARTON OF LIVE MARINE FISH&lt;/GoodsDescription&gt;
-                &lt;ConsigneeId&gt;GB999900746000&lt;/ConsigneeId&gt;
-                &lt;ConsigneeName&gt;GB999900746000&lt;/ConsigneeName&gt;
-                &lt;ItemNetMass&gt;27&lt;/ItemNetMass&gt;
-                &lt;ItemOriginCountryCode&gt;FR&lt;/ItemOriginCountryCode&gt;
-                &lt;Document&gt;
-                    &lt;DocumentCode&gt;C640&lt;/DocumentCode&gt;
-                    &lt;DocumentReference&gt;${documentReference}&lt;/DocumentReference&gt;
-                    &lt;DocumentStatus&gt;AE&lt;/DocumentStatus&gt;
-                    &lt;DocumentControl&gt;P&lt;/DocumentControl&gt;
-                &lt;/Document&gt;
-                &lt;Check&gt;
-                    &lt;CheckCode&gt;H221&lt;/CheckCode&gt;
-                    &lt;DepartmentCode&gt;AHVLA&lt;/DepartmentCode&gt;
-                &lt;/Check&gt;
-            &lt;/Item&gt;
-            &lt;Item&gt;
-                &lt;ItemNumber&gt;4&lt;/ItemNumber&gt;
-                &lt;CustomsProcedureCode&gt;4000000&lt;/CustomsProcedureCode&gt;
-                &lt;TaricCommodityCode&gt;0308901000&lt;/TaricCommodityCode&gt;
-                &lt;GoodsDescription&gt;1 CARTON OF LIVE INVERTEBRATES&lt;/GoodsDescription&gt;
-                &lt;ConsigneeId&gt;GB999900746000&lt;/ConsigneeId&gt;
-                &lt;ConsigneeName&gt;GB999900746000&lt;/ConsigneeName&gt;
-                &lt;ItemNetMass&gt;56&lt;/ItemNetMass&gt;
-                &lt;ItemOriginCountryCode&gt;FR&lt;/ItemOriginCountryCode&gt;
-                &lt;Document&gt;
-                    &lt;DocumentCode&gt;C640&lt;/DocumentCode&gt;
-                    &lt;DocumentReference&gt;${documentReference}&lt;/DocumentReference&gt;
-                    &lt;DocumentStatus&gt;AE&lt;/DocumentStatus&gt;
-                    &lt;DocumentControl&gt;P&lt;/DocumentControl&gt;
-                &lt;/Document&gt;
-                &lt;Check&gt;
-                    &lt;CheckCode&gt;H221&lt;/CheckCode&gt;
-                    &lt;DepartmentCode&gt;AHVLA&lt;/DepartmentCode&gt;
-                &lt;/Check&gt;
-            &lt;/Item&gt;
-            &lt;Item&gt;
-                &lt;ItemNumber&gt;5&lt;/ItemNumber&gt;
-                &lt;CustomsProcedureCode&gt;4000000&lt;/CustomsProcedureCode&gt;
-                &lt;TaricCommodityCode&gt;0307910099&lt;/TaricCommodityCode&gt;
-                &lt;GoodsDescription&gt;1 CARTON OF LIVE MOLLUSCS&lt;/GoodsDescription&gt;
-                &lt;ConsigneeId&gt;GB999900746000&lt;/ConsigneeId&gt;
-                &lt;ConsigneeName&gt;GB999900746000&lt;/ConsigneeName&gt;
-                &lt;ItemNetMass&gt;12&lt;/ItemNetMass&gt;
-                &lt;ItemOriginCountryCode&gt;FR&lt;/ItemOriginCountryCode&gt;
-                &lt;Document&gt;
-                    &lt;DocumentCode&gt;C640&lt;/DocumentCode&gt;
-                    &lt;DocumentReference&gt;${documentReference}&lt;/DocumentReference&gt;
-                    &lt;DocumentStatus&gt;AE&lt;/DocumentStatus&gt;
-                    &lt;DocumentControl&gt;P&lt;/DocumentControl&gt;
-                &lt;/Document&gt;
-                &lt;Check&gt;
-                    &lt;CheckCode&gt;H221&lt;/CheckCode&gt;
-                    &lt;DepartmentCode&gt;AHVLA&lt;/DepartmentCode&gt;
-                &lt;/Check&gt;
-            &lt;/Item&gt;
-         &lt;/ALVSClearanceRequest&gt;
-    &lt;/soap:Body&gt;
-&lt;/soap:Envelope&gt;
-&quot;&quot;&quot;
-
-vars.put(&quot;soapBody&quot;, soapXml)
-
-
-
-def randomAlphanum(len) {
-    def chars = (&apos;A&apos;..&apos;Z&apos;) + (&apos;0&apos;..&apos;9&apos;)
-    (1..len).collect { chars[new Random().nextInt(chars.size())] }.join()
-}
-</stringProp>
-            </JSR223PreProcessor>
-            <hashTree/>
-            <JSR223PostProcessor guiclass="TestBeanGUI" testclass="JSR223PostProcessor" testname="Update Sample Label" enabled="false">
-              <stringProp name="scriptLanguage">groovy</stringProp>
-              <stringProp name="parameters"></stringProp>
-              <stringProp name="filename"></stringProp>
-              <stringProp name="cacheKey">true</stringProp>
-              <stringProp name="script">prev.setSampleLabel(&apos;Send Clearance Request: &apos; + vars.get(&apos;mrn&apos;))</stringProp>
-            </JSR223PostProcessor>
-            <hashTree/>
-          </hashTree>
           <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Send Notification" enabled="true">
             <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
             <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
@@ -824,6 +625,201 @@ prev.setSampleLabel(&apos;Send Notification: &apos; + vars.get(&apos;referenceNu
               <stringProp name="parameters"></stringProp>
               <stringProp name="script">prev.setIgnore()</stringProp>
               <stringProp name="scriptLanguage">groovy</stringProp>
+            </JSR223PostProcessor>
+            <hashTree/>
+          </hashTree>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Send Clearance Request" enabled="true">
+            <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+              <collectionProp name="Arguments.arguments">
+                <elementProp name="" elementType="HTTPArgument">
+                  <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                  <stringProp name="Argument.value">${soapBody}</stringProp>
+                  <stringProp name="Argument.metadata">=</stringProp>
+                </elementProp>
+              </collectionProp>
+            </elementProp>
+            <stringProp name="HTTPSampler.domain">${__groovy(props.get(&apos;BtmsGateway__Host&apos;))}</stringProp>
+            <stringProp name="HTTPSampler.port"></stringProp>
+            <stringProp name="HTTPSampler.protocol">https</stringProp>
+            <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+            <stringProp name="HTTPSampler.path">/ITSW/CDS/SubmitImportDocumentCDSFacadeService</stringProp>
+            <stringProp name="HTTPSampler.method">PUT</stringProp>
+            <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+            <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+            <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+            <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+            <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+            <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+            <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          </HTTPSamplerProxy>
+          <hashTree>
+            <JSR223PreProcessor guiclass="TestBeanGUI" testclass="JSR223PreProcessor" testname="Prepare SOAP body" enabled="true">
+              <stringProp name="scriptLanguage">groovy</stringProp>
+              <stringProp name="parameters"></stringProp>
+              <stringProp name="filename"></stringProp>
+              <stringProp name="cacheKey">true</stringProp>
+              <stringProp name="script">import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
+
+def timestamp = ZonedDateTime.now().withNano(0).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+def correlationId = (Math.floor(1e11 + Math.random() * 9e11) as long).toString()
+def entryRef = &quot;25GB&quot; + randomAlphanum(14)
+def declarationUCR = &quot;4GB979990102001-0160-${new Random().nextInt(90) + 10}&quot;
+def documentReference = vars.get(&apos;referenceNumber&apos;)
+
+vars.put(&quot;mrn&quot;,entryRef)
+
+def soapXml = &quot;&quot;&quot;
+&lt;soap:Envelope xmlns:soap=&quot;http://www.w3.org/2003/05/soap-envelope&quot;
+    xmlns:oas=&quot;http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd&quot;&gt;
+    &lt;soap:Header&gt;
+        &lt;oas:Security soap:role=&quot;system&quot; soap:mustUnderstand=&quot;true&quot;&gt;
+            &lt;oas:UsernameToken&gt;
+            &lt;/oas:UsernameToken&gt;
+        &lt;/oas:Security&gt;
+    &lt;/soap:Header&gt;
+    &lt;soap:Body&gt;
+        &lt;ALVSClearanceRequest xmlns=&quot;http://submitimportdocumenthmrcfacade.types.esb.ws.cara.defra.com&quot;&gt;
+            &lt;ServiceHeader&gt;
+                &lt;SourceSystem&gt;CDS&lt;/SourceSystem&gt;
+                &lt;DestinationSystem&gt;ALVS&lt;/DestinationSystem&gt;
+                &lt;CorrelationId&gt;${correlationId}&lt;/CorrelationId&gt;
+                &lt;ServiceCallTimestamp&gt;${timestamp}&lt;/ServiceCallTimestamp&gt;
+            &lt;/ServiceHeader&gt;
+            &lt;Header&gt;
+                &lt;EntryReference&gt;${entryRef}&lt;/EntryReference&gt;
+                &lt;EntryVersionNumber&gt;1&lt;/EntryVersionNumber&gt;
+                &lt;DeclarationUCR&gt;${declarationUCR}&lt;/DeclarationUCR&gt;
+                &lt;DeclarationType&gt;S&lt;/DeclarationType&gt;
+                &lt;SubmitterTURN&gt;GB998038429000&lt;/SubmitterTURN&gt;
+                &lt;DeclarantId&gt;GB998038429000&lt;/DeclarantId&gt;
+                &lt;DeclarantName&gt;GB998038429000&lt;/DeclarantName&gt;
+                &lt;DispatchCountryCode&gt;MA&lt;/DispatchCountryCode&gt;
+                &lt;GoodsLocationCode&gt;DEUDEUDEU&lt;/GoodsLocationCode&gt;
+            &lt;/Header&gt;
+            &lt;Item&gt;
+                &lt;ItemNumber&gt;1&lt;/ItemNumber&gt;
+                &lt;CustomsProcedureCode&gt;4000000&lt;/CustomsProcedureCode&gt;
+                &lt;TaricCommodityCode&gt;0301110000&lt;/TaricCommodityCode&gt;
+                &lt;GoodsDescription&gt;6 CARTONS OF LIVE FRESHWATER FISH&lt;/GoodsDescription&gt;
+                &lt;ConsigneeId&gt;GB999900746000&lt;/ConsigneeId&gt;
+                &lt;ConsigneeName&gt;GB999900746000&lt;/ConsigneeName&gt;
+                &lt;ItemNetMass&gt;150&lt;/ItemNetMass&gt;
+                &lt;ItemOriginCountryCode&gt;FR&lt;/ItemOriginCountryCode&gt;
+                &lt;Document&gt;
+                    &lt;DocumentCode&gt;C640&lt;/DocumentCode&gt;
+                    &lt;DocumentReference&gt;${documentReference}&lt;/DocumentReference&gt;
+                    &lt;DocumentStatus&gt;AE&lt;/DocumentStatus&gt;
+                    &lt;DocumentControl&gt;P&lt;/DocumentControl&gt;
+                &lt;/Document&gt;
+                &lt;Check&gt;
+                    &lt;CheckCode&gt;H221&lt;/CheckCode&gt;
+                    &lt;DepartmentCode&gt;AHVLA&lt;/DepartmentCode&gt;
+                &lt;/Check&gt;
+            &lt;/Item&gt;
+            &lt;Item&gt;
+                &lt;ItemNumber&gt;2&lt;/ItemNumber&gt;
+                &lt;CustomsProcedureCode&gt;4000000&lt;/CustomsProcedureCode&gt;
+                &lt;TaricCommodityCode&gt;0307600000&lt;/TaricCommodityCode&gt;
+                &lt;GoodsDescription&gt;1 CARTON OF LIVE SNAILS&lt;/GoodsDescription&gt;
+                &lt;ConsigneeId&gt;GB999900746000&lt;/ConsigneeId&gt;
+                &lt;ConsigneeName&gt;GB999900746000&lt;/ConsigneeName&gt;
+                &lt;ItemNetMass&gt;20&lt;/ItemNetMass&gt;
+                &lt;ItemOriginCountryCode&gt;FR&lt;/ItemOriginCountryCode&gt;
+                &lt;Document&gt;
+                    &lt;DocumentCode&gt;C640&lt;/DocumentCode&gt;
+                    &lt;DocumentReference&gt;${documentReference}&lt;/DocumentReference&gt;
+                    &lt;DocumentStatus&gt;AE&lt;/DocumentStatus&gt;
+                    &lt;DocumentControl&gt;P&lt;/DocumentControl&gt;
+                &lt;/Document&gt;
+                &lt;Check&gt;
+                    &lt;CheckCode&gt;H221&lt;/CheckCode&gt;
+                    &lt;DepartmentCode&gt;AHVLA&lt;/DepartmentCode&gt;
+                &lt;/Check&gt;
+            &lt;/Item&gt;
+            &lt;Item&gt;
+                &lt;ItemNumber&gt;3&lt;/ItemNumber&gt;
+                &lt;CustomsProcedureCode&gt;4000000&lt;/CustomsProcedureCode&gt;
+                &lt;TaricCommodityCode&gt;0301190000&lt;/TaricCommodityCode&gt;
+                &lt;GoodsDescription&gt;1 CARTON OF LIVE MARINE FISH&lt;/GoodsDescription&gt;
+                &lt;ConsigneeId&gt;GB999900746000&lt;/ConsigneeId&gt;
+                &lt;ConsigneeName&gt;GB999900746000&lt;/ConsigneeName&gt;
+                &lt;ItemNetMass&gt;27&lt;/ItemNetMass&gt;
+                &lt;ItemOriginCountryCode&gt;FR&lt;/ItemOriginCountryCode&gt;
+                &lt;Document&gt;
+                    &lt;DocumentCode&gt;C640&lt;/DocumentCode&gt;
+                    &lt;DocumentReference&gt;${documentReference}&lt;/DocumentReference&gt;
+                    &lt;DocumentStatus&gt;AE&lt;/DocumentStatus&gt;
+                    &lt;DocumentControl&gt;P&lt;/DocumentControl&gt;
+                &lt;/Document&gt;
+                &lt;Check&gt;
+                    &lt;CheckCode&gt;H221&lt;/CheckCode&gt;
+                    &lt;DepartmentCode&gt;AHVLA&lt;/DepartmentCode&gt;
+                &lt;/Check&gt;
+            &lt;/Item&gt;
+            &lt;Item&gt;
+                &lt;ItemNumber&gt;4&lt;/ItemNumber&gt;
+                &lt;CustomsProcedureCode&gt;4000000&lt;/CustomsProcedureCode&gt;
+                &lt;TaricCommodityCode&gt;0308901000&lt;/TaricCommodityCode&gt;
+                &lt;GoodsDescription&gt;1 CARTON OF LIVE INVERTEBRATES&lt;/GoodsDescription&gt;
+                &lt;ConsigneeId&gt;GB999900746000&lt;/ConsigneeId&gt;
+                &lt;ConsigneeName&gt;GB999900746000&lt;/ConsigneeName&gt;
+                &lt;ItemNetMass&gt;56&lt;/ItemNetMass&gt;
+                &lt;ItemOriginCountryCode&gt;FR&lt;/ItemOriginCountryCode&gt;
+                &lt;Document&gt;
+                    &lt;DocumentCode&gt;C640&lt;/DocumentCode&gt;
+                    &lt;DocumentReference&gt;${documentReference}&lt;/DocumentReference&gt;
+                    &lt;DocumentStatus&gt;AE&lt;/DocumentStatus&gt;
+                    &lt;DocumentControl&gt;P&lt;/DocumentControl&gt;
+                &lt;/Document&gt;
+                &lt;Check&gt;
+                    &lt;CheckCode&gt;H221&lt;/CheckCode&gt;
+                    &lt;DepartmentCode&gt;AHVLA&lt;/DepartmentCode&gt;
+                &lt;/Check&gt;
+            &lt;/Item&gt;
+            &lt;Item&gt;
+                &lt;ItemNumber&gt;5&lt;/ItemNumber&gt;
+                &lt;CustomsProcedureCode&gt;4000000&lt;/CustomsProcedureCode&gt;
+                &lt;TaricCommodityCode&gt;0307910099&lt;/TaricCommodityCode&gt;
+                &lt;GoodsDescription&gt;1 CARTON OF LIVE MOLLUSCS&lt;/GoodsDescription&gt;
+                &lt;ConsigneeId&gt;GB999900746000&lt;/ConsigneeId&gt;
+                &lt;ConsigneeName&gt;GB999900746000&lt;/ConsigneeName&gt;
+                &lt;ItemNetMass&gt;12&lt;/ItemNetMass&gt;
+                &lt;ItemOriginCountryCode&gt;FR&lt;/ItemOriginCountryCode&gt;
+                &lt;Document&gt;
+                    &lt;DocumentCode&gt;C640&lt;/DocumentCode&gt;
+                    &lt;DocumentReference&gt;${documentReference}&lt;/DocumentReference&gt;
+                    &lt;DocumentStatus&gt;AE&lt;/DocumentStatus&gt;
+                    &lt;DocumentControl&gt;P&lt;/DocumentControl&gt;
+                &lt;/Document&gt;
+                &lt;Check&gt;
+                    &lt;CheckCode&gt;H221&lt;/CheckCode&gt;
+                    &lt;DepartmentCode&gt;AHVLA&lt;/DepartmentCode&gt;
+                &lt;/Check&gt;
+            &lt;/Item&gt;
+         &lt;/ALVSClearanceRequest&gt;
+    &lt;/soap:Body&gt;
+&lt;/soap:Envelope&gt;
+&quot;&quot;&quot;
+
+vars.put(&quot;soapBody&quot;, soapXml)
+
+
+
+def randomAlphanum(len) {
+    def chars = (&apos;A&apos;..&apos;Z&apos;) + (&apos;0&apos;..&apos;9&apos;)
+    (1..len).collect { chars[new Random().nextInt(chars.size())] }.join()
+}
+</stringProp>
+            </JSR223PreProcessor>
+            <hashTree/>
+            <JSR223PostProcessor guiclass="TestBeanGUI" testclass="JSR223PostProcessor" testname="Update Sample Label" enabled="false">
+              <stringProp name="scriptLanguage">groovy</stringProp>
+              <stringProp name="parameters"></stringProp>
+              <stringProp name="filename"></stringProp>
+              <stringProp name="cacheKey">true</stringProp>
+              <stringProp name="script">prev.setSampleLabel(&apos;Send Clearance Request: &apos; + vars.get(&apos;mrn&apos;))</stringProp>
             </JSR223PostProcessor>
             <hashTree/>
           </hashTree>
@@ -1566,10 +1562,6 @@ vars.put(&quot;id&quot;, id)</stringProp>
           </HTTPSamplerProxy>
           <hashTree/>
         </hashTree>
-        <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Wait before verification" enabled="true">
-          <stringProp name="ConstantTimer.delay">10000</stringProp>
-        </ConstantTimer>
-        <hashTree/>
         <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Init Loop" enabled="true">
           <stringProp name="scriptLanguage">groovy</stringProp>
           <stringProp name="parameters"></stringProp>
@@ -1583,7 +1575,12 @@ vars.put(&quot;pollError&quot;, &quot;false&quot;)
 vars.put(&quot;pollInterval&quot;, &quot;3000&quot;)  
 SampleResult.setIgnore()</stringProp>
         </JSR223Sampler>
-        <hashTree/>
+        <hashTree>
+          <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Wait before verification" enabled="true">
+            <stringProp name="ConstantTimer.delay">10000</stringProp>
+          </ConstantTimer>
+          <hashTree/>
+        </hashTree>
         <WhileController guiclass="WhileControllerGui" testclass="WhileController" testname="While Controller" enabled="true">
           <stringProp name="WhileController.condition">${__groovy(
     def start = vars.get(&quot;pollStart&quot;) as long
@@ -1869,7 +1866,7 @@ if (success) {
         </HTTPSamplerProxy>
         <hashTree/>
       </hashTree>
-      <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="true">
+      <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="false">
         <boolProp name="ResultCollector.error_logging">false</boolProp>
         <objProp>
           <name>saveConfig</name>
@@ -1906,7 +1903,7 @@ if (success) {
         <stringProp name="filename"></stringProp>
       </ResultCollector>
       <hashTree/>
-      <ResultCollector guiclass="TableVisualizer" testclass="ResultCollector" testname="View Results in Table" enabled="true">
+      <ResultCollector guiclass="TableVisualizer" testclass="ResultCollector" testname="View Results in Table" enabled="false">
         <boolProp name="ResultCollector.error_logging">false</boolProp>
         <objProp>
           <name>saveConfig</name>
