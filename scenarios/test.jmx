@@ -155,7 +155,7 @@ Map parseAsbConnectionString(String str) {
         <hashTree/>
       </hashTree>
       <OpenModelThreadGroup guiclass="OpenModelThreadGroupGui" testclass="OpenModelThreadGroup" testname="CDS/ALVS" enabled="true">
-        <stringProp name="OpenModelThreadGroup.schedule">rate(10/min) even_arrivals(1 min) rate(30/min) even_arrivals(5 min) even_arrivals(1 min) rate(60/min) even_arrivals(5 min) even_arrivals(1 min) rate(120/min) even_arrivals(5 min) even_arrivals(1 min) rate(180/min) even_arrivals(10 min)</stringProp>
+        <stringProp name="OpenModelThreadGroup.schedule">rate(10/min) even_arrivals(1 min) rate(30/min) even_arrivals(10 min) even_arrivals(1 min) rate(60/min) even_arrivals(10 min) even_arrivals(1 min) rate(120/min) even_arrivals(10 min) even_arrivals(1 min) rate(180/min) even_arrivals(10 min) even_arrivals(1 min) rate(240/min) even_arrivals(10 min)</stringProp>
         <stringProp name="OpenModelThreadGroup.random_seed"> </stringProp>
         <stringProp name="ThreadGroup.on_sample_error">stopthread</stringProp>
         <elementProp name="ThreadGroup.main_controller" elementType="OpenModelThreadGroupController"/>
