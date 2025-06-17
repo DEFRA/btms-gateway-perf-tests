@@ -157,7 +157,7 @@ Map parseAsbConnectionString(String str) {
       <OpenModelThreadGroup guiclass="OpenModelThreadGroupGui" testclass="OpenModelThreadGroup" testname="CDS/ALVS" enabled="true">
         <stringProp name="OpenModelThreadGroup.schedule">rate(10/min) even_arrivals(1 min) rate(30/min) even_arrivals(10 min) even_arrivals(1 min) rate(60/min) even_arrivals(10 min) even_arrivals(1 min) rate(120/min) even_arrivals(10 min) even_arrivals(1 min) rate(180/min) even_arrivals(10 min) even_arrivals(1 min) rate(210/min) even_arrivals(10 min)</stringProp>
         <stringProp name="OpenModelThreadGroup.random_seed"> </stringProp>
-        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <stringProp name="ThreadGroup.on_sample_error">stopthread</stringProp>
         <elementProp name="ThreadGroup.main_controller" elementType="OpenModelThreadGroupController"/>
       </OpenModelThreadGroup>
       <hashTree>
@@ -175,7 +175,7 @@ Map parseAsbConnectionString(String str) {
               <stringProp name="ConstantTimer.delay">10000</stringProp>
             </ConstantTimer>
             <hashTree/>
-            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="00.01. Send Notification" enabled="true">
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="01.01. Send Notification" enabled="true">
               <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
               <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
                 <collectionProp name="Arguments.arguments">
@@ -1541,12 +1541,6 @@ vars.put(&quot;id&quot;, id)</stringProp>
               <stringProp name="HTTPSampler.connect_timeout"></stringProp>
               <stringProp name="HTTPSampler.response_timeout"></stringProp>
             </HTTPSamplerProxy>
-            <hashTree/>
-            <TestAction guiclass="TestActionGui" testclass="TestAction" testname="Flow Control Action" enabled="true">
-              <intProp name="ActionProcessor.action">0</intProp>
-              <intProp name="ActionProcessor.target">0</intProp>
-              <stringProp name="ActionProcessor.duration">0</stringProp>
-            </TestAction>
             <hashTree/>
             <JSR223PostProcessor guiclass="TestBeanGUI" testclass="JSR223PostProcessor" testname="Ignore ASB connection failures" enabled="true">
               <stringProp name="TestPlan.comments">If we get failure sending to the ASB, we need can ignore this, it&apos;s not the SUT that is at fault. But we also need to stop the current thread iteration.</stringProp>
