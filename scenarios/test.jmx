@@ -118,7 +118,7 @@ def setServiceBusVariables(String connectionName) {
 
 	String key = asb.SharedAccessKey
 
-	int expiryInSeconds =  3600
+	int expiryInSeconds =  43200
 	long expiry = (System.currentTimeMillis() / 1000) + expiryInSeconds
 	String encodedUri = URLEncoder.encode(fullUri, &quot;UTF-8&quot;)
 	String stringToSign = &quot;${encodedUri}\n${expiry}&quot;
