@@ -67,7 +67,8 @@ def expectedVars = [
     &quot;ServiceBus__Notifications__ConnectionString&quot;: &quot;NODEFAULT&quot;,  
     &quot;ServiceBus__Notifications__Protocol&quot;: &quot;https&quot;,
     &quot;ServiceBus__Gmrs__ConnectionString&quot;: &quot;NODEFAULT&quot;,  
-    &quot;ServiceBus__Gmrs__Protocol&quot;: &quot;https&quot;
+    &quot;ServiceBus__Gmrs__Protocol&quot;: &quot;https&quot;,
+    &quot;InitialIpaffsCounterValue&quot;: &quot;7000000&quot;
 ]
 
 expectedVars.each { key, defaultValue -&gt;
@@ -562,6 +563,15 @@ Map parseAsbConnectionString(String str) {
               <stringProp name="HTTPSampler.response_timeout"></stringProp>
             </HTTPSamplerProxy>
             <hashTree>
+              <CounterConfig guiclass="CounterConfigGui" testclass="CounterConfig" testname="ipaffsCounter" enabled="true">
+                <stringProp name="CounterConfig.start">${__groovy(Integer.parseInt(props.get(&quot;InitialIpaffsCounterValue&quot;)))}</stringProp>
+                <stringProp name="CounterConfig.end">9999999</stringProp>
+                <stringProp name="CounterConfig.incr">1</stringProp>
+                <stringProp name="CounterConfig.name">ipaffsCounter</stringProp>
+                <stringProp name="CounterConfig.format"></stringProp>
+                <boolProp name="CounterConfig.per_user">false</boolProp>
+              </CounterConfig>
+              <hashTree/>
               <JSR223PreProcessor guiclass="TestBeanGUI" testclass="JSR223PreProcessor" testname="Use Proxy" enabled="false">
                 <stringProp name="scriptLanguage">groovy</stringProp>
                 <stringProp name="parameters"></stringProp>
@@ -595,9 +605,11 @@ if (sampler instanceof HTTPSamplerBase) {
                 <stringProp name="parameters"></stringProp>
                 <stringProp name="filename"></stringProp>
                 <stringProp name="cacheKey">true</stringProp>
-                <stringProp name="script">def suffix = String.format(&quot;%07d&quot;, new Random().nextInt(1_000_000))
+                <stringProp name="script">//def suffix = String.format(&quot;%07d&quot;, new Random().nextInt(1_000_000))
 
-def ref = &quot;CHEDA.XX.2025.${suffix}&quot;
+def suffix = vars.get(&quot;ipaffsCounter&quot;)
+
+def ref = &quot;CHEDA.GB.2023.${suffix}&quot;
 //log.info(&apos;CHED: &apos; + ref)
 vars.put(&quot;referenceNumber&quot;, ref)</stringProp>
               </JSR223PreProcessor>
@@ -828,7 +840,7 @@ def randomAlphanum(len) {
                     <boolProp name="HTTPArgument.always_encode">false</boolProp>
                     <stringProp name="Argument.value">{&#xd;
   &quot;referenceNumber&quot;: &quot;${referenceNumber}&quot;,&#xd;
-  &quot;version&quot;: 1,&#xd;
+  &quot;version&quot;: 2,&#xd;
   &quot;lastUpdated&quot;: &quot;${__time(yyyy-MM-dd&apos;T&apos;HH:mm:ss.SSS&apos;Z&apos;)}&quot;,&#xd;
   &quot;lastUpdatedBy&quot;: {&#xd;
     &quot;displayName&quot;: &quot;121b752eb2e43e1201ac433287387f83b604b4045ab489914d27b70d1eda7668&quot;,&#xd;
