@@ -68,7 +68,8 @@ def expectedVars = [
     &quot;ServiceBus__Notifications__Protocol&quot;: &quot;https&quot;,
     &quot;ServiceBus__Gmrs__ConnectionString&quot;: &quot;NODEFAULT&quot;,  
     &quot;ServiceBus__Gmrs__Protocol&quot;: &quot;https&quot;,
-    &quot;InitialIpaffsCounterValue&quot;: &quot;7000000&quot;
+    &quot;InitialIpaffsCounterValue&quot;: &quot;7000000&quot;,
+    &quot;TradeImportsDataApi_AuthToken&quot;: &quot;NODEFAULT&quot;
 ]
 
 expectedVars.each { key, defaultValue -&gt;
@@ -90,53 +91,69 @@ import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 import java.util.Base64
 
-
 def asbConnections = [
 	&apos;ServiceBus__Notifications&apos;,
-	&apos;ServiceBus__Gmrs&apos;]
+	&apos;ServiceBus__Gmrs&apos;
+]
 
 asbConnections.each { conn -&gt;
-      setServiceBusVariables(conn)}
+	setServiceBusVariables(conn)
+}
 
 SampleResult.setIgnore()
 
 def setServiceBusVariables(String connectionName) {
-
-	def asb = parseAsbConnectionString(props.get(connectionName + &quot;__ConnectionString&quot;))
+	def connStr = props.get(connectionName + &quot;__ConnectionString&quot;)
+	log.info(&quot;ConnectionString for ${connectionName}: ${connStr}&quot;)
+	def asb = parseAsbConnectionString(connStr)
+	log.info(&quot;Parsed ASB map for ${connectionName}: ${asb}&quot;)
 
 	def host = asb.Endpoint
+	log.info(&quot;Endpoint: ${host}&quot;)
 	def entityPath = asb.EntityPath
+	log.info(&quot;EntityPath: ${entityPath}&quot;)
 	def fullUri = &quot;https://${host}/${entityPath}&quot;
+	log.info(&quot;Full URI: ${fullUri}&quot;)
 	def path = &quot;/${entityPath}/messages&quot;
+	log.info(&quot;Path: ${path}&quot;)
 
 	props.put(connectionName + &quot;__Host&quot;, host)
-	log.info(props.get(connectionName + &quot;__Host&quot;))
 	props.put(connectionName + &quot;__Path&quot;, path)
 	props.put(connectionName + &quot;__ResourceUri&quot;, fullUri)
 	props.put(connectionName + &quot;__KeyName&quot;, asb.SharedAccessKeyName)
 	props.put(connectionName + &quot;__Key&quot;, asb.SharedAccessKey)
 
-
 	String key = asb.SharedAccessKey
+	log.info(&quot;SharedAccessKey: ${key}&quot;)
 
-	int expiryInSeconds =  43200
+	int expiryInSeconds = 43200
+	log.info(&quot;ExpiryInSeconds: ${expiryInSeconds}&quot;)
 	long expiry = (System.currentTimeMillis() / 1000) + expiryInSeconds
+	log.info(&quot;Expiry (epoch): ${expiry}&quot;)
+
 	String encodedUri = URLEncoder.encode(fullUri, &quot;UTF-8&quot;)
+	log.info(&quot;Encoded URI: ${encodedUri}&quot;)
 	String stringToSign = &quot;${encodedUri}\n${expiry}&quot;
+	log.info(&quot;StringToSign: ${stringToSign}&quot;)
 
 	Mac hmac = Mac.getInstance(&quot;HmacSHA256&quot;)
-	SecretKeySpec secretKey = new SecretKeySpec(asb.SharedAccessKey.getBytes(&quot;UTF-8&quot;), &quot;HmacSHA256&quot;)
+	SecretKeySpec secretKey = new SecretKeySpec(key.getBytes(&quot;UTF-8&quot;), &quot;HmacSHA256&quot;)
 	hmac.init(secretKey)
 	byte[] signatureBytes = hmac.doFinal(stringToSign.getBytes(&quot;UTF-8&quot;))
+	log.info(&quot;SignatureBytes (base64 raw): ${Base64.encoder.encodeToString(signatureBytes)}&quot;)
+
 	String encodedSignature = URLEncoder.encode(Base64.encoder.encodeToString(signatureBytes), &quot;UTF-8&quot;)
+	log.info(&quot;Encoded Signature: ${encodedSignature}&quot;)
 
 	String token = &quot;SharedAccessSignature sr=${encodedUri}&amp;sig=${encodedSignature}&amp;se=${expiry}&amp;skn=${asb.SharedAccessKeyName}&quot;
+	log.info(&quot;Generated SAS token: ${token}&quot;)
 	props.put(connectionName + &quot;__AuthToken&quot;, token)
 
 	log.info(&quot;Generated SAS token for: ${entityPath}&quot;)
 }
 
 Map parseAsbConnectionString(String str) {
+	log.info(&quot;Parsing connection string: ${str}&quot;)
     def map = [:]
     str.split(&apos;;&apos;).each {
         def kv = it.split(&apos;=&apos;, 2)
@@ -144,15 +161,66 @@ Map parseAsbConnectionString(String str) {
             map[kv[0].trim()] = kv[1].trim()
         }
     }
+	log.info(&quot;Map after split: ${map}&quot;)
     if (map[&quot;Endpoint&quot;]) {
         map[&quot;Endpoint&quot;] = map[&quot;Endpoint&quot;]
             .replaceFirst(&quot;^sb://&quot;, &quot;&quot;)
             .replaceAll(/\/$/, &quot;&quot;)
+        log.info(&quot;Normalized Endpoint: ${map[&apos;Endpoint&apos;]}&quot;)
     }
     return map
 }
 </stringProp>
         </JSR223Sampler>
+        <hashTree/>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GetMaxIpaffsId" enabled="true">
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+            <collectionProp name="Arguments.arguments"/>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">trade-imports-data-api.perf-test.cdp-int.defra.cloud</stringProp>
+          <stringProp name="HTTPSampler.port"></stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">admin/max-id</stringProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">Authorization</stringProp>
+                <stringProp name="Header.value">Basic ${__groovy(props.get(&quot;TradeImportsDataApi_AuthToken&quot;))}</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+          <JSR223PostProcessor guiclass="TestBeanGUI" testclass="JSR223PostProcessor" testname="JSR223 PostProcessor" enabled="true">
+            <stringProp name="scriptLanguage">groovy</stringProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="cacheKey">true</stringProp>
+            <stringProp name="script">import groovy.json.JsonSlurper
+
+
+def json = new JsonSlurper().parseText(prev.getResponseDataAsString())
+def fullId = json.importPreNotification
+def id = fullId[-7..-1]
+props.put(&apos;InitialIpaffsCounterValue&apos;,(id.toInteger() + 1).toString())</stringProp>
+          </JSR223PostProcessor>
+          <hashTree/>
+        </hashTree>
+        <DebugSampler guiclass="TestBeanGUI" testclass="DebugSampler" testname="Debug Sampler" enabled="false">
+          <boolProp name="displayJMeterProperties">true</boolProp>
+          <boolProp name="displayJMeterVariables">true</boolProp>
+          <boolProp name="displaySystemProperties">false</boolProp>
+        </DebugSampler>
         <hashTree/>
       </hashTree>
       <OpenModelThreadGroup guiclass="OpenModelThreadGroupGui" testclass="OpenModelThreadGroup" testname="CDS/ALVS" enabled="true">
@@ -670,156 +738,92 @@ prev.setSampleLabel(&apos;Send Notification: &apos; + vars.get(&apos;referenceNu
                 <stringProp name="cacheKey">true</stringProp>
                 <stringProp name="script">import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import java.text.SimpleDateFormat
 
-def timestamp = ZonedDateTime.now().withNano(0).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
-def correlationId = (Math.floor(1e11 + Math.random() * 9e11) as long).toString()
-def entryRef = &quot;25GB&quot; + randomAlphanum(14)
-def declarationUCR = &quot;4GB979990102001-0160-${new Random().nextInt(90) + 10}&quot;
-def documentReference = vars.get(&apos;referenceNumber&apos;)
-
-vars.put(&quot;mrn&quot;,entryRef)
-
-def soapXml = &quot;&quot;&quot;
-&lt;soap:Envelope xmlns:soap=&quot;http://www.w3.org/2003/05/soap-envelope&quot;
-    xmlns:oas=&quot;http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd&quot;&gt;
-    &lt;soap:Header&gt;
-        &lt;oas:Security soap:role=&quot;system&quot; soap:mustUnderstand=&quot;true&quot;&gt;
-            &lt;oas:UsernameToken&gt;
-            &lt;/oas:UsernameToken&gt;
-        &lt;/oas:Security&gt;
-    &lt;/soap:Header&gt;
-    &lt;soap:Body&gt;
-        &lt;ALVSClearanceRequest xmlns=&quot;http://submitimportdocumenthmrcfacade.types.esb.ws.cara.defra.com&quot;&gt;
-            &lt;ServiceHeader&gt;
-                &lt;SourceSystem&gt;CDS&lt;/SourceSystem&gt;
-                &lt;DestinationSystem&gt;ALVS&lt;/DestinationSystem&gt;
-                &lt;CorrelationId&gt;${correlationId}&lt;/CorrelationId&gt;
-                &lt;ServiceCallTimestamp&gt;${timestamp}&lt;/ServiceCallTimestamp&gt;
-            &lt;/ServiceHeader&gt;
-            &lt;Header&gt;
-                &lt;EntryReference&gt;${entryRef}&lt;/EntryReference&gt;
-                &lt;EntryVersionNumber&gt;1&lt;/EntryVersionNumber&gt;
-                &lt;DeclarationUCR&gt;${declarationUCR}&lt;/DeclarationUCR&gt;
-                &lt;DeclarationType&gt;S&lt;/DeclarationType&gt;
-                &lt;SubmitterTURN&gt;GB998038429000&lt;/SubmitterTURN&gt;
-                &lt;DeclarantId&gt;GB998038429000&lt;/DeclarantId&gt;
-                &lt;DeclarantName&gt;GB998038429000&lt;/DeclarantName&gt;
-                &lt;DispatchCountryCode&gt;MA&lt;/DispatchCountryCode&gt;
-                &lt;GoodsLocationCode&gt;DEUDEUDEU&lt;/GoodsLocationCode&gt;
-            &lt;/Header&gt;
-            &lt;Item&gt;
-                &lt;ItemNumber&gt;1&lt;/ItemNumber&gt;
-                &lt;CustomsProcedureCode&gt;4000000&lt;/CustomsProcedureCode&gt;
-                &lt;TaricCommodityCode&gt;0301110000&lt;/TaricCommodityCode&gt;
-                &lt;GoodsDescription&gt;6 CARTONS OF LIVE FRESHWATER FISH&lt;/GoodsDescription&gt;
-                &lt;ConsigneeId&gt;GB999900746000&lt;/ConsigneeId&gt;
-                &lt;ConsigneeName&gt;GB999900746000&lt;/ConsigneeName&gt;
-                &lt;ItemNetMass&gt;150&lt;/ItemNetMass&gt;
-                &lt;ItemOriginCountryCode&gt;FR&lt;/ItemOriginCountryCode&gt;
-                &lt;Document&gt;
-                    &lt;DocumentCode&gt;C640&lt;/DocumentCode&gt;
-                    &lt;DocumentReference&gt;${documentReference}&lt;/DocumentReference&gt;
-                    &lt;DocumentStatus&gt;AE&lt;/DocumentStatus&gt;
-                    &lt;DocumentControl&gt;P&lt;/DocumentControl&gt;
-                &lt;/Document&gt;
-                &lt;Check&gt;
-                    &lt;CheckCode&gt;H221&lt;/CheckCode&gt;
-                    &lt;DepartmentCode&gt;AHVLA&lt;/DepartmentCode&gt;
-                &lt;/Check&gt;
-            &lt;/Item&gt;
-            &lt;Item&gt;
-                &lt;ItemNumber&gt;2&lt;/ItemNumber&gt;
-                &lt;CustomsProcedureCode&gt;4000000&lt;/CustomsProcedureCode&gt;
-                &lt;TaricCommodityCode&gt;0307600000&lt;/TaricCommodityCode&gt;
-                &lt;GoodsDescription&gt;1 CARTON OF LIVE SNAILS&lt;/GoodsDescription&gt;
-                &lt;ConsigneeId&gt;GB999900746000&lt;/ConsigneeId&gt;
-                &lt;ConsigneeName&gt;GB999900746000&lt;/ConsigneeName&gt;
-                &lt;ItemNetMass&gt;20&lt;/ItemNetMass&gt;
-                &lt;ItemOriginCountryCode&gt;FR&lt;/ItemOriginCountryCode&gt;
-                &lt;Document&gt;
-                    &lt;DocumentCode&gt;C640&lt;/DocumentCode&gt;
-                    &lt;DocumentReference&gt;${documentReference}&lt;/DocumentReference&gt;
-                    &lt;DocumentStatus&gt;AE&lt;/DocumentStatus&gt;
-                    &lt;DocumentControl&gt;P&lt;/DocumentControl&gt;
-                &lt;/Document&gt;
-                &lt;Check&gt;
-                    &lt;CheckCode&gt;H221&lt;/CheckCode&gt;
-                    &lt;DepartmentCode&gt;AHVLA&lt;/DepartmentCode&gt;
-                &lt;/Check&gt;
-            &lt;/Item&gt;
-            &lt;Item&gt;
-                &lt;ItemNumber&gt;3&lt;/ItemNumber&gt;
-                &lt;CustomsProcedureCode&gt;4000000&lt;/CustomsProcedureCode&gt;
-                &lt;TaricCommodityCode&gt;0301190000&lt;/TaricCommodityCode&gt;
-                &lt;GoodsDescription&gt;1 CARTON OF LIVE MARINE FISH&lt;/GoodsDescription&gt;
-                &lt;ConsigneeId&gt;GB999900746000&lt;/ConsigneeId&gt;
-                &lt;ConsigneeName&gt;GB999900746000&lt;/ConsigneeName&gt;
-                &lt;ItemNetMass&gt;27&lt;/ItemNetMass&gt;
-                &lt;ItemOriginCountryCode&gt;FR&lt;/ItemOriginCountryCode&gt;
-                &lt;Document&gt;
-                    &lt;DocumentCode&gt;C640&lt;/DocumentCode&gt;
-                    &lt;DocumentReference&gt;${documentReference}&lt;/DocumentReference&gt;
-                    &lt;DocumentStatus&gt;AE&lt;/DocumentStatus&gt;
-                    &lt;DocumentControl&gt;P&lt;/DocumentControl&gt;
-                &lt;/Document&gt;
-                &lt;Check&gt;
-                    &lt;CheckCode&gt;H221&lt;/CheckCode&gt;
-                    &lt;DepartmentCode&gt;AHVLA&lt;/DepartmentCode&gt;
-                &lt;/Check&gt;
-            &lt;/Item&gt;
-            &lt;Item&gt;
-                &lt;ItemNumber&gt;4&lt;/ItemNumber&gt;
-                &lt;CustomsProcedureCode&gt;4000000&lt;/CustomsProcedureCode&gt;
-                &lt;TaricCommodityCode&gt;0308901000&lt;/TaricCommodityCode&gt;
-                &lt;GoodsDescription&gt;1 CARTON OF LIVE INVERTEBRATES&lt;/GoodsDescription&gt;
-                &lt;ConsigneeId&gt;GB999900746000&lt;/ConsigneeId&gt;
-                &lt;ConsigneeName&gt;GB999900746000&lt;/ConsigneeName&gt;
-                &lt;ItemNetMass&gt;56&lt;/ItemNetMass&gt;
-                &lt;ItemOriginCountryCode&gt;FR&lt;/ItemOriginCountryCode&gt;
-                &lt;Document&gt;
-                    &lt;DocumentCode&gt;C640&lt;/DocumentCode&gt;
-                    &lt;DocumentReference&gt;${documentReference}&lt;/DocumentReference&gt;
-                    &lt;DocumentStatus&gt;AE&lt;/DocumentStatus&gt;
-                    &lt;DocumentControl&gt;P&lt;/DocumentControl&gt;
-                &lt;/Document&gt;
-                &lt;Check&gt;
-                    &lt;CheckCode&gt;H221&lt;/CheckCode&gt;
-                    &lt;DepartmentCode&gt;AHVLA&lt;/DepartmentCode&gt;
-                &lt;/Check&gt;
-            &lt;/Item&gt;
-            &lt;Item&gt;
-                &lt;ItemNumber&gt;5&lt;/ItemNumber&gt;
-                &lt;CustomsProcedureCode&gt;4000000&lt;/CustomsProcedureCode&gt;
-                &lt;TaricCommodityCode&gt;0307910099&lt;/TaricCommodityCode&gt;
-                &lt;GoodsDescription&gt;1 CARTON OF LIVE MOLLUSCS&lt;/GoodsDescription&gt;
-                &lt;ConsigneeId&gt;GB999900746000&lt;/ConsigneeId&gt;
-                &lt;ConsigneeName&gt;GB999900746000&lt;/ConsigneeName&gt;
-                &lt;ItemNetMass&gt;12&lt;/ItemNetMass&gt;
-                &lt;ItemOriginCountryCode&gt;FR&lt;/ItemOriginCountryCode&gt;
-                &lt;Document&gt;
-                    &lt;DocumentCode&gt;C640&lt;/DocumentCode&gt;
-                    &lt;DocumentReference&gt;${documentReference}&lt;/DocumentReference&gt;
-                    &lt;DocumentStatus&gt;AE&lt;/DocumentStatus&gt;
-                    &lt;DocumentControl&gt;P&lt;/DocumentControl&gt;
-                &lt;/Document&gt;
-                &lt;Check&gt;
-                    &lt;CheckCode&gt;H221&lt;/CheckCode&gt;
-                    &lt;DepartmentCode&gt;AHVLA&lt;/DepartmentCode&gt;
-                &lt;/Check&gt;
-            &lt;/Item&gt;
-         &lt;/ALVSClearanceRequest&gt;
-    &lt;/soap:Body&gt;
-&lt;/soap:Envelope&gt;
-&quot;&quot;&quot;
-
-vars.put(&quot;soapBody&quot;, soapXml)
-
-
-
-def randomAlphanum(len) {
+def randomAlphanum(int len) {
     def chars = (&apos;A&apos;..&apos;Z&apos;) + (&apos;0&apos;..&apos;9&apos;)
     (1..len).collect { chars[new Random().nextInt(chars.size())] }.join()
 }
+
+def createRandomDucr() {
+    def rnd = new Random()
+    def timePart = new SimpleDateFormat(&quot;HHmmss&quot;).format(new Date())
+    def digitsNeeded = 12 - timePart.length()
+    def randDigits   = (1..digitsNeeded).collect{ rnd.nextInt(10) }.join()
+    def block1       = &quot;4GB&quot; + timePart + randDigits
+    def letters      = (&apos;A&apos;..&apos;Z&apos;).join()
+    def block2Letters= (1..2).collect{ letters[rnd.nextInt(letters.size())] }.join()
+    def block2Digits = (1..4).collect{ rnd.nextInt(10) }.join()
+    def block2       = block2Letters + block2Digits
+    def block3d1     = (1..2).collect{ rnd.nextInt(10) }.join()
+    def block3l      = (1..3).collect{ letters[rnd.nextInt(letters.size())] }.join()
+    def block3d2     = (1..5).collect{ rnd.nextInt(10) }.join()
+    def block3       = block3d1 + block3l + block3d2
+    return &quot;${block1}-${block2}-${block3}&quot;
+}
+
+def timestamp         = ZonedDateTime.now().withNano(0).format(DateTimeFormatter.ISO_OFFSET_DATE_TIME)
+def correlationId     = (Math.floor(1e11 + Math.random() * 9e11) as long).toString()
+def entryRef          = &quot;25GB&quot; + randomAlphanum(14)
+def documentReference = vars.get(&apos;referenceNumber&apos;)
+def ducr              = createRandomDucr()
+
+vars.put(&apos;ducr&apos;, ducr)
+vars.put(&apos;mrn&apos;, entryRef)
+
+def soapXml = &quot;&quot;&quot;
+&lt;soap:Envelope xmlns:soap=&quot;http://www.w3.org/2003/05/soap-envelope&quot;
+               xmlns:oas=&quot;http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd&quot;&gt;
+  &lt;soap:Header&gt;
+    &lt;oas:Security soap:role=&quot;system&quot; soap:mustUnderstand=&quot;true&quot;&gt;
+      &lt;oas:UsernameToken/&gt;
+    &lt;/oas:Security&gt;
+  &lt;/soap:Header&gt;
+  &lt;soap:Body&gt;
+    &lt;ALVSClearanceRequest xmlns=&quot;http://submitimportdocumenthmrcfacade.types.esb.ws.cara.defra.com&quot;&gt;
+      &lt;ServiceHeader&gt;
+        &lt;SourceSystem&gt;CDS&lt;/SourceSystem&gt;
+        &lt;DestinationSystem&gt;ALVS&lt;/DestinationSystem&gt;
+        &lt;CorrelationId&gt;${correlationId}&lt;/CorrelationId&gt;
+        &lt;ServiceCallTimestamp&gt;${timestamp}&lt;/ServiceCallTimestamp&gt;
+      &lt;/ServiceHeader&gt;
+      &lt;Header&gt;
+        &lt;EntryReference&gt;${entryRef}&lt;/EntryReference&gt;
+        &lt;EntryVersionNumber&gt;1&lt;/EntryVersionNumber&gt;
+        &lt;DeclarationUCR&gt;${ducr}&lt;/DeclarationUCR&gt;
+        &lt;DeclarationType&gt;S&lt;/DeclarationType&gt;
+        &lt;SubmitterTURN&gt;GB998038429000&lt;/SubmitterTURN&gt;
+        &lt;DeclarantId&gt;GB998038429000&lt;/DeclarantId&gt;
+        &lt;DeclarantName&gt;GB998038429000&lt;/DeclarantName&gt;
+        &lt;DispatchCountryCode&gt;MA&lt;/DispatchCountryCode&gt;
+        &lt;GoodsLocationCode&gt;DEUDEUDEU&lt;/GoodsLocationCode&gt;
+      &lt;/Header&gt;
+      &lt;Item&gt;
+        &lt;ItemNumber&gt;1&lt;/ItemNumber&gt;
+        &lt;CustomsProcedureCode&gt;4000000&lt;/CustomsProcedureCode&gt;
+        &lt;TaricCommodityCode&gt;0301110000&lt;/TaricCommodityCode&gt;
+        &lt;GoodsDescription&gt;6 CARTONS OF LIVE FRESHWATER FISH&lt;/GoodsDescription&gt;
+        &lt;ConsigneeId&gt;GB999900746000&lt;/ConsigneeId&gt;
+        &lt;ConsigneeName&gt;GB999900746000&lt;/ConsigneeName&gt;
+        &lt;ItemNetMass&gt;150&lt;/ItemNetMass&gt;
+        &lt;ItemOriginCountryCode&gt;FR&lt;/ItemOriginCountryCode&gt;
+        &lt;Document&gt;
+          &lt;DocumentCode&gt;C640&lt;/DocumentCode&gt;
+          &lt;DocumentReference&gt;${documentReference}&lt;/DocumentReference&gt;
+          &lt;DocumentStatus&gt;AE&lt;/DocumentStatus&gt;
+          &lt;DocumentControl&gt;P&lt;/DocumentControl&gt;
+        &lt;/Document&gt;
+        &lt;Check&gt;
+          &lt;CheckCode&gt;H221&lt;/CheckCode&gt;
+          &lt;DepartmentCode&gt;AHVLA&lt;/DepartmentCode&gt;
+        &lt;/Check&gt;
+      &lt;/Item&gt;
+    &lt;/ALVSClearanceRequest&gt;
+  &lt;/soap:Body&gt;
+&lt;/soap:Envelope&gt;
+&quot;&quot;&quot;
+
+vars.put(&apos;soapBody&apos;, soapXml)
 </stringProp>
               </JSR223PreProcessor>
               <hashTree/>
@@ -1575,6 +1579,15 @@ if (!prev.isSuccessful()) {
             </JSR223PostProcessor>
             <hashTree/>
           </hashTree>
+          <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Save ids to file" enabled="true">
+            <stringProp name="scriptLanguage">groovy</stringProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="cacheKey">true</stringProp>
+            <stringProp name="script">def outFile = new File(&apos;idsCreated.csv&apos;)
+outFile &lt;&lt; &quot;${vars.get(&apos;mrn&apos;)},${vars.get(&apos;referenceNumber&apos;)},${vars.get(&apos;ducr&apos;)}\n&quot;</stringProp>
+          </JSR223Sampler>
+          <hashTree/>
           <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="02.00 Verify" enabled="true">
             <boolProp name="TransactionController.includeTimers">false</boolProp>
             <boolProp name="TransactionController.parent">true</boolProp>
@@ -1832,33 +1845,6 @@ SampleResult.setSuccessful(matched)
         </HTTPSamplerProxy>
         <hashTree/>
       </hashTree>
-      <OpenModelThreadGroup guiclass="OpenModelThreadGroupGui" testclass="OpenModelThreadGroup" testname="UI Search Journey" enabled="false">
-        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
-        <elementProp name="ThreadGroup.main_controller" elementType="OpenModelThreadGroupController"/>
-        <stringProp name="OpenModelThreadGroup.schedule"></stringProp>
-        <stringProp name="OpenModelThreadGroup.random_seed"></stringProp>
-      </OpenModelThreadGroup>
-      <hashTree>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="HTTP Request" enabled="true">
-          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
-            <collectionProp name="Arguments.arguments"/>
-          </elementProp>
-          <stringProp name="HTTPSampler.domain"></stringProp>
-          <stringProp name="HTTPSampler.port"></stringProp>
-          <stringProp name="HTTPSampler.protocol"></stringProp>
-          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
-          <stringProp name="HTTPSampler.path"></stringProp>
-          <stringProp name="HTTPSampler.method">GET</stringProp>
-          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
-          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
-          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
-          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
-          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
-          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
-          <stringProp name="HTTPSampler.response_timeout"></stringProp>
-        </HTTPSamplerProxy>
-        <hashTree/>
-      </hashTree>
       <OpenModelThreadGroup guiclass="OpenModelThreadGroupGui" testclass="OpenModelThreadGroup" testname="PHA API" enabled="false">
         <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
         <elementProp name="ThreadGroup.main_controller" elementType="OpenModelThreadGroupController"/>
@@ -1886,6 +1872,698 @@ SampleResult.setSuccessful(matched)
         </HTTPSamplerProxy>
         <hashTree/>
       </hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="UI" enabled="true">
+        <stringProp name="ThreadGroup.on_sample_error">startnextloop</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <intProp name="LoopController.loops">-1</intProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">300</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">1200</stringProp>
+        <boolProp name="ThreadGroup.scheduler">true</boolProp>
+        <stringProp name="ThreadGroup.duration">3600</stringProp>
+        <stringProp name="ThreadGroup.delay">180</stringProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">false</boolProp>
+      </ThreadGroup>
+      <hashTree>
+        <CookieManager guiclass="CookiePanel" testclass="CookieManager" testname="HTTP Cookie Manager" enabled="true">
+          <collectionProp name="CookieManager.cookies"/>
+          <boolProp name="CookieManager.clearEachIteration">true</boolProp>
+          <boolProp name="CookieManager.controlledByThreadGroup">false</boolProp>
+        </CookieManager>
+        <hashTree/>
+        <LoopController guiclass="LoopControlPanel" testclass="LoopController" testname="Initialise" enabled="true">
+          <boolProp name="LoopController.continue_forever">true</boolProp>
+          <stringProp name="LoopController.loops">1</stringProp>
+        </LoopController>
+        <hashTree>
+          <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Get Random Search Values" enabled="true">
+            <stringProp name="scriptLanguage">groovy</stringProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="cacheKey">true</stringProp>
+            <stringProp name="script">def dataFile = new File(&apos;idsCreated.csv&apos;)
+
+if (!dataFile.exists() || dataFile.length()==0) {
+    log.warn(&quot;idsCreated.csv not yet initialized&quot;)
+} else {
+    def lines = dataFile.readLines()
+    def rndLine = lines[new Random().nextInt(lines.size())]
+    def parts = rndLine.split(&apos;,&apos;)
+    
+    vars.put(&apos;mrn&apos;,  parts[0])
+    vars.put(&apos;ched&apos;, parts[1])
+    vars.put(&apos;ducr&apos;, parts[2])
+}</stringProp>
+          </JSR223Sampler>
+          <hashTree/>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="HomePage" enabled="true">
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+              <collectionProp name="Arguments.arguments"/>
+            </elementProp>
+            <stringProp name="HTTPSampler.domain">btms-portal-frontend.perf-test.cdp-int.defra.cloud</stringProp>
+            <stringProp name="HTTPSampler.port"></stringProp>
+            <stringProp name="HTTPSampler.protocol">https</stringProp>
+            <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+            <stringProp name="HTTPSampler.path"></stringProp>
+            <stringProp name="HTTPSampler.method">GET</stringProp>
+            <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+            <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+            <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+            <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+            <boolProp name="HTTPSampler.image_parser">true</boolProp>
+            <boolProp name="HTTPSampler.concurrentDwn">true</boolProp>
+            <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+            <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
+            <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+            <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          </HTTPSamplerProxy>
+          <hashTree/>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="sign-in" enabled="true">
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+              <collectionProp name="Arguments.arguments">
+                <elementProp name="" elementType="HTTPArgument">
+                  <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                  <stringProp name="Argument.value"></stringProp>
+                  <stringProp name="Argument.metadata">=</stringProp>
+                  <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                </elementProp>
+              </collectionProp>
+            </elementProp>
+            <stringProp name="HTTPSampler.domain">btms-portal-frontend.perf-test.cdp-int.defra.cloud</stringProp>
+            <stringProp name="HTTPSampler.port"></stringProp>
+            <stringProp name="HTTPSampler.protocol">https</stringProp>
+            <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+            <stringProp name="HTTPSampler.path">/sign-in</stringProp>
+            <stringProp name="HTTPSampler.method">GET</stringProp>
+            <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+            <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+            <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+            <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+            <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+            <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
+            <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+            <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          </HTTPSamplerProxy>
+          <hashTree>
+            <RegexExtractor guiclass="RegexExtractorGui" testclass="RegexExtractor" testname="Get Login Link" enabled="false">
+              <stringProp name="RegexExtractor.useHeaders">false</stringProp>
+              <stringProp name="RegexExtractor.refname">loginLink</stringProp>
+              <stringProp name="RegexExtractor.regex">href=&quot;(\/cdp-defra-id-stub\/authorize\?[^&quot;]*user=chris\.johnson@example\.com[^&quot;]*)&quot; </stringProp>
+              <stringProp name="RegexExtractor.template">$1$</stringProp>
+              <stringProp name="RegexExtractor.default"></stringProp>
+              <stringProp name="RegexExtractor.match_number">1</stringProp>
+            </RegexExtractor>
+            <hashTree/>
+            <HtmlExtractor guiclass="HtmlExtractorGui" testclass="HtmlExtractor" testname="Get Login Path" enabled="true">
+              <stringProp name="HtmlExtractor.refname">loginLink</stringProp>
+              <stringProp name="HtmlExtractor.expr">a[href*=&quot;user=chris.johnson@example.com&quot;]</stringProp>
+              <stringProp name="HtmlExtractor.attribute">href</stringProp>
+              <stringProp name="HtmlExtractor.default"></stringProp>
+              <boolProp name="HtmlExtractor.default_empty_value">false</boolProp>
+              <stringProp name="HtmlExtractor.match_number">1</stringProp>
+              <stringProp name="HtmlExtractor.extractor_impl"></stringProp>
+            </HtmlExtractor>
+            <hashTree/>
+          </hashTree>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Select Identity" enabled="true">
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+              <collectionProp name="Arguments.arguments"/>
+            </elementProp>
+            <stringProp name="HTTPSampler.domain">cdp-defra-id-stub.perf-test.cdp-int.defra.cloud</stringProp>
+            <stringProp name="HTTPSampler.port"></stringProp>
+            <stringProp name="HTTPSampler.protocol">https</stringProp>
+            <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+            <stringProp name="HTTPSampler.path">${__groovy(vars.get(&apos;loginLink&apos;))}</stringProp>
+            <stringProp name="HTTPSampler.method">GET</stringProp>
+            <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+            <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+            <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+            <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+            <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+            <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
+            <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+            <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          </HTTPSamplerProxy>
+          <hashTree/>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Search Page" enabled="true">
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+              <collectionProp name="Arguments.arguments"/>
+            </elementProp>
+            <stringProp name="HTTPSampler.domain">btms-portal-frontend.perf-test.cdp-int.defra.cloud</stringProp>
+            <stringProp name="HTTPSampler.port"></stringProp>
+            <stringProp name="HTTPSampler.protocol">https</stringProp>
+            <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+            <stringProp name="HTTPSampler.path">/search</stringProp>
+            <stringProp name="HTTPSampler.method">GET</stringProp>
+            <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+            <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+            <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+            <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+            <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+            <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
+            <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+            <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          </HTTPSamplerProxy>
+          <hashTree>
+            <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager" enabled="true">
+              <collectionProp name="HeaderManager.headers">
+                <elementProp name="" elementType="Header">
+                  <stringProp name="Header.name">X-XSRF-TOKEN</stringProp>
+                  <stringProp name="Header.value">${__cookie(XSRF-TOKEN)}</stringProp>
+                </elementProp>
+              </collectionProp>
+            </HeaderManager>
+            <hashTree/>
+          </hashTree>
+        </hashTree>
+        <LoopController guiclass="LoopControlPanel" testclass="LoopController" testname="Do searches" enabled="true">
+          <boolProp name="LoopController.continue_forever">true</boolProp>
+          <stringProp name="LoopController.loops">10</stringProp>
+        </LoopController>
+        <hashTree>
+          <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Think Time" enabled="true">
+            <stringProp name="ConstantTimer.delay">60000</stringProp>
+          </ConstantTimer>
+          <hashTree/>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Search for Ducr" enabled="true">
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+              <collectionProp name="Arguments.arguments"/>
+            </elementProp>
+            <stringProp name="HTTPSampler.domain">btms-portal-frontend.perf-test.cdp-int.defra.cloud</stringProp>
+            <stringProp name="HTTPSampler.port"></stringProp>
+            <stringProp name="HTTPSampler.protocol">https</stringProp>
+            <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+            <stringProp name="HTTPSampler.path">search-result?searchTerm=${ducr} </stringProp>
+            <stringProp name="HTTPSampler.method">GET</stringProp>
+            <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+            <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+            <boolProp name="HTTPSampler.use_keepalive">false</boolProp>
+            <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+            <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+            <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+            <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          </HTTPSamplerProxy>
+          <hashTree>
+            <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Response Assertion" enabled="true">
+              <collectionProp name="Asserion.test_strings">
+                <stringProp name="1206406850">${ched}</stringProp>
+              </collectionProp>
+              <stringProp name="Assertion.custom_message"></stringProp>
+              <stringProp name="Assertion.test_field">Assertion.response_data</stringProp>
+              <boolProp name="Assertion.assume_success">false</boolProp>
+              <intProp name="Assertion.test_type">16</intProp>
+            </ResponseAssertion>
+            <hashTree/>
+          </hashTree>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Search for MRN" enabled="true">
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+              <collectionProp name="Arguments.arguments"/>
+            </elementProp>
+            <stringProp name="HTTPSampler.domain">btms-portal-frontend.perf-test.cdp-int.defra.cloud</stringProp>
+            <stringProp name="HTTPSampler.port"></stringProp>
+            <stringProp name="HTTPSampler.protocol">https</stringProp>
+            <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+            <stringProp name="HTTPSampler.path">search-result?searchTerm=${mrn} </stringProp>
+            <stringProp name="HTTPSampler.method">GET</stringProp>
+            <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+            <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+            <boolProp name="HTTPSampler.use_keepalive">false</boolProp>
+            <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+            <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+            <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+            <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          </HTTPSamplerProxy>
+          <hashTree>
+            <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Response Assertion" enabled="true">
+              <collectionProp name="Asserion.test_strings">
+                <stringProp name="1206406850">${ched}</stringProp>
+              </collectionProp>
+              <stringProp name="Assertion.custom_message"></stringProp>
+              <stringProp name="Assertion.test_field">Assertion.response_data</stringProp>
+              <boolProp name="Assertion.assume_success">false</boolProp>
+              <intProp name="Assertion.test_type">16</intProp>
+            </ResponseAssertion>
+            <hashTree/>
+          </hashTree>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Search for CHED" enabled="true">
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+              <collectionProp name="Arguments.arguments"/>
+            </elementProp>
+            <stringProp name="HTTPSampler.domain">btms-portal-frontend.perf-test.cdp-int.defra.cloud</stringProp>
+            <stringProp name="HTTPSampler.port"></stringProp>
+            <stringProp name="HTTPSampler.protocol">https</stringProp>
+            <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+            <stringProp name="HTTPSampler.path">search-result?searchTerm=${ched} </stringProp>
+            <stringProp name="HTTPSampler.method">GET</stringProp>
+            <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+            <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+            <boolProp name="HTTPSampler.use_keepalive">false</boolProp>
+            <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+            <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+            <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+            <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          </HTTPSamplerProxy>
+          <hashTree>
+            <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Response Assertion" enabled="true">
+              <collectionProp name="Asserion.test_strings">
+                <stringProp name="1147602827">${mrn}</stringProp>
+              </collectionProp>
+              <stringProp name="Assertion.custom_message"></stringProp>
+              <stringProp name="Assertion.test_field">Assertion.response_data</stringProp>
+              <boolProp name="Assertion.assume_success">false</boolProp>
+              <intProp name="Assertion.test_type">16</intProp>
+            </ResponseAssertion>
+            <hashTree/>
+          </hashTree>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Search for MRN - Doesn&apos;t Exist" enabled="true">
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+              <collectionProp name="Arguments.arguments"/>
+            </elementProp>
+            <stringProp name="HTTPSampler.domain">btms-portal-frontend.perf-test.cdp-int.defra.cloud</stringProp>
+            <stringProp name="HTTPSampler.port"></stringProp>
+            <stringProp name="HTTPSampler.protocol">https</stringProp>
+            <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+            <stringProp name="HTTPSampler.path">search-result?searchTerm=${notAnMrn} </stringProp>
+            <stringProp name="HTTPSampler.method">GET</stringProp>
+            <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+            <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+            <boolProp name="HTTPSampler.use_keepalive">false</boolProp>
+            <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+            <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+            <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+            <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          </HTTPSamplerProxy>
+          <hashTree>
+            <JSR223PreProcessor guiclass="TestBeanGUI" testclass="JSR223PreProcessor" testname="Generate Random MRN" enabled="true">
+              <stringProp name="scriptLanguage">groovy</stringProp>
+              <stringProp name="parameters"></stringProp>
+              <stringProp name="filename"></stringProp>
+              <stringProp name="cacheKey">true</stringProp>
+              <stringProp name="script">def randomAlphanum(int len) {
+    def chars = (&apos;A&apos;..&apos;Z&apos;) + (&apos;0&apos;..&apos;9&apos;)
+    (1..len).collect { chars[new Random().nextInt(chars.size())] }.join()
+}
+def notAnMrn = &quot;21GB&quot; + randomAlphanum(14)
+vars.put(&quot;notAnMrn&quot;, notAnMrn )</stringProp>
+            </JSR223PreProcessor>
+            <hashTree/>
+            <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Response Assertion" enabled="true">
+              <collectionProp name="Asserion.test_strings">
+                <stringProp name="-1739685751">This MRN, CHED or DUCR reference cannot be found</stringProp>
+              </collectionProp>
+              <stringProp name="Assertion.custom_message"></stringProp>
+              <stringProp name="Assertion.test_field">Assertion.response_data</stringProp>
+              <boolProp name="Assertion.assume_success">false</boolProp>
+              <intProp name="Assertion.test_type">16</intProp>
+            </ResponseAssertion>
+            <hashTree/>
+          </hashTree>
+        </hashTree>
+        <WhileController guiclass="WhileControllerGui" testclass="WhileController" testname="While Controller" enabled="false">
+          <stringProp name="WhileController.condition">${__groovy(
+  org.apache.jmeter.threads.JMeterContextService
+    .getThreadCounts()
+    .get(&apos;CDS/ALVS&apos;)
+    .getActiveThreadCount() &gt; 0
+)}</stringProp>
+        </WhileController>
+        <hashTree>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Authorise" enabled="false">
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+              <collectionProp name="Arguments.arguments">
+                <elementProp name="serviceId" elementType="HTTPArgument">
+                  <boolProp name="HTTPArgument.always_encode">true</boolProp>
+                  <stringProp name="Argument.value">d7d72b79-9c62-ee11-8df0-000d3adf7047</stringProp>
+                  <stringProp name="Argument.metadata">=</stringProp>
+                  <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                  <stringProp name="Argument.name">serviceId</stringProp>
+                </elementProp>
+                <elementProp name="client_id" elementType="HTTPArgument">
+                  <boolProp name="HTTPArgument.always_encode">true</boolProp>
+                  <stringProp name="Argument.value">2fb0d715-affa-4bf1-836e-44a464e3fbea</stringProp>
+                  <stringProp name="Argument.metadata">=</stringProp>
+                  <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                  <stringProp name="Argument.name">client_id</stringProp>
+                </elementProp>
+                <elementProp name="response_type" elementType="HTTPArgument">
+                  <boolProp name="HTTPArgument.always_encode">true</boolProp>
+                  <stringProp name="Argument.value">code</stringProp>
+                  <stringProp name="Argument.metadata">=</stringProp>
+                  <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                  <stringProp name="Argument.name">response_type</stringProp>
+                </elementProp>
+                <elementProp name="redirect_uri" elementType="HTTPArgument">
+                  <boolProp name="HTTPArgument.always_encode">true</boolProp>
+                  <stringProp name="Argument.value">https://btms-portal-frontend.perf-test.cdp-int.defra.cloud/signin-oidc</stringProp>
+                  <stringProp name="Argument.metadata">=</stringProp>
+                  <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                  <stringProp name="Argument.name">redirect_uri</stringProp>
+                </elementProp>
+                <elementProp name="state" elementType="HTTPArgument">
+                  <boolProp name="HTTPArgument.always_encode">true</boolProp>
+                  <stringProp name="Argument.value">${state}</stringProp>
+                  <stringProp name="Argument.metadata">=</stringProp>
+                  <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                  <stringProp name="Argument.name">state</stringProp>
+                </elementProp>
+                <elementProp name="scope" elementType="HTTPArgument">
+                  <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                  <stringProp name="Argument.value">openid%20offline_access</stringProp>
+                  <stringProp name="Argument.metadata">=</stringProp>
+                  <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                  <stringProp name="Argument.name">scope</stringProp>
+                </elementProp>
+                <elementProp name="code_challenge" elementType="HTTPArgument">
+                  <boolProp name="HTTPArgument.always_encode">true</boolProp>
+                  <stringProp name="Argument.value">${code_challenge}</stringProp>
+                  <stringProp name="Argument.metadata">=</stringProp>
+                  <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                  <stringProp name="Argument.name">code_challenge</stringProp>
+                </elementProp>
+                <elementProp name="code_challenge_method" elementType="HTTPArgument">
+                  <boolProp name="HTTPArgument.always_encode">true</boolProp>
+                  <stringProp name="Argument.value">S256</stringProp>
+                  <stringProp name="Argument.metadata">=</stringProp>
+                  <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                  <stringProp name="Argument.name">code_challenge_method</stringProp>
+                </elementProp>
+                <elementProp name="user" elementType="HTTPArgument">
+                  <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                  <stringProp name="Argument.value">chris.johnson@example.com</stringProp>
+                  <stringProp name="Argument.metadata">=</stringProp>
+                  <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                  <stringProp name="Argument.name">user</stringProp>
+                </elementProp>
+              </collectionProp>
+            </elementProp>
+            <stringProp name="HTTPSampler.domain">cdp-defra-id-stub.perf-test.cdp-int.defra.cloud</stringProp>
+            <stringProp name="HTTPSampler.port"></stringProp>
+            <stringProp name="HTTPSampler.protocol">https</stringProp>
+            <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+            <stringProp name="HTTPSampler.path">cdp-defra-id-stub/authorize</stringProp>
+            <stringProp name="HTTPSampler.method">GET</stringProp>
+            <boolProp name="HTTPSampler.follow_redirects">false</boolProp>
+            <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+            <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+            <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+            <boolProp name="HTTPSampler.image_parser">true</boolProp>
+            <boolProp name="HTTPSampler.concurrentDwn">true</boolProp>
+            <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+            <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
+            <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+            <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          </HTTPSamplerProxy>
+          <hashTree>
+            <JSR223PreProcessor guiclass="TestBeanGUI" testclass="JSR223PreProcessor" testname="JSR223 PreProcessor" enabled="true">
+              <stringProp name="scriptLanguage">groovy</stringProp>
+              <stringProp name="parameters"></stringProp>
+              <stringProp name="filename"></stringProp>
+              <stringProp name="cacheKey">true</stringProp>
+              <stringProp name="script">import java.security.MessageDigest
+import java.util.Base64
+import java.util.UUID
+
+byte[] randomBytes = new byte[32]
+new java.security.SecureRandom().nextBytes(randomBytes)
+String codeVerifier = Base64.getUrlEncoder()
+                           .withoutPadding()
+                           .encodeToString(randomBytes)
+vars.put(&apos;code_verifier&apos;, codeVerifier)
+
+MessageDigest md = MessageDigest.getInstance(&quot;SHA-256&quot;)
+byte[] digest = md.digest(codeVerifier.getBytes(&apos;US-ASCII&apos;))
+String codeChallenge = Base64.getUrlEncoder()
+                             .withoutPadding()
+                             .encodeToString(digest)
+vars.put(&apos;code_challenge&apos;, codeChallenge)
+
+
+// generate a fresh random state on every iteration
+String state = UUID.randomUUID().toString()
+vars.put(&apos;state&apos;, state)
+</stringProp>
+            </JSR223PreProcessor>
+            <hashTree/>
+            <RegexExtractor guiclass="RegexExtractorGui" testclass="RegexExtractor" testname="Regular Expression Extractor" enabled="false">
+              <stringProp name="RegexExtractor.useHeaders">true</stringProp>
+              <stringProp name="RegexExtractor.refname">redirectUrl</stringProp>
+              <stringProp name="RegexExtractor.regex">Location:\s*(https?://[^\s]+)</stringProp>
+              <stringProp name="RegexExtractor.template">$1$</stringProp>
+              <stringProp name="RegexExtractor.default"></stringProp>
+              <stringProp name="RegexExtractor.match_number"></stringProp>
+            </RegexExtractor>
+            <hashTree/>
+            <RegexExtractor guiclass="RegexExtractorGui" testclass="RegexExtractor" testname="Extract Authorisation Code" enabled="true">
+              <stringProp name="RegexExtractor.useHeaders">true</stringProp>
+              <stringProp name="RegexExtractor.refname">code</stringProp>
+              <stringProp name="RegexExtractor.regex">(?i)Location:.*?[?&amp;]code=(\d+)</stringProp>
+              <stringProp name="RegexExtractor.template">$1$</stringProp>
+              <stringProp name="RegexExtractor.default"></stringProp>
+              <stringProp name="RegexExtractor.match_number">1</stringProp>
+            </RegexExtractor>
+            <hashTree/>
+            <JSR223PostProcessor guiclass="TestBeanGUI" testclass="JSR223PostProcessor" testname="JSR223 PostProcessor" enabled="false">
+              <stringProp name="scriptLanguage">groovy</stringProp>
+              <stringProp name="parameters"></stringProp>
+              <stringProp name="filename"></stringProp>
+              <stringProp name="cacheKey">true</stringProp>
+              <stringProp name="script">log.info(&quot;Extracted code → &apos;&quot; + vars.get(&apos;code&apos;) + &quot;&apos;&quot;);</stringProp>
+            </JSR223PostProcessor>
+            <hashTree/>
+          </hashTree>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Callback" enabled="false">
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+              <collectionProp name="Arguments.arguments">
+                <elementProp name="code" elementType="HTTPArgument">
+                  <boolProp name="HTTPArgument.always_encode">true</boolProp>
+                  <stringProp name="Argument.value">${code}</stringProp>
+                  <stringProp name="Argument.metadata">=</stringProp>
+                  <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                  <stringProp name="Argument.name">code</stringProp>
+                </elementProp>
+                <elementProp name="state" elementType="HTTPArgument">
+                  <boolProp name="HTTPArgument.always_encode">true</boolProp>
+                  <stringProp name="Argument.value">${state}</stringProp>
+                  <stringProp name="Argument.metadata">=</stringProp>
+                  <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                  <stringProp name="Argument.name">state</stringProp>
+                </elementProp>
+              </collectionProp>
+            </elementProp>
+            <stringProp name="HTTPSampler.domain">btms-portal-frontend.perf-test.cdp-int.defra.cloud</stringProp>
+            <stringProp name="HTTPSampler.port"></stringProp>
+            <stringProp name="HTTPSampler.protocol">https</stringProp>
+            <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+            <stringProp name="HTTPSampler.path">/signin-oidc</stringProp>
+            <stringProp name="HTTPSampler.method">GET</stringProp>
+            <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+            <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+            <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+            <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+            <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+            <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
+            <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+            <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          </HTTPSamplerProxy>
+          <hashTree>
+            <RegexExtractor guiclass="RegexExtractorGui" testclass="RegexExtractor" testname="Regular Expression Extractor" enabled="false">
+              <stringProp name="RegexExtractor.useHeaders">unescaped</stringProp>
+              <stringProp name="RegexExtractor.refname">refreshPath</stringProp>
+              <stringProp name="RegexExtractor.regex">&lt;meta\s+http-equiv=&quot;refresh&quot;\s+content=&quot;0;URL=&apos;https?://[^/]+(/signin-oidc\?[^&apos;]+)&apos;&quot;&gt; </stringProp>
+              <stringProp name="RegexExtractor.template">$1$</stringProp>
+              <stringProp name="RegexExtractor.default"></stringProp>
+              <stringProp name="RegexExtractor.match_number">1</stringProp>
+            </RegexExtractor>
+            <hashTree/>
+            <JSR223PostProcessor guiclass="TestBeanGUI" testclass="JSR223PostProcessor" testname="JSR223 PostProcessor" enabled="true">
+              <stringProp name="scriptLanguage">groovy</stringProp>
+              <stringProp name="parameters"></stringProp>
+              <stringProp name="filename"></stringProp>
+              <stringProp name="cacheKey">true</stringProp>
+              <stringProp name="script">import java.net.URL
+
+// 1) Pull the full URL out of the HTML response
+String html = prev.getResponseDataAsString()
+def m = (html =~ /URL=&apos;([^&apos;]+)&apos;/)
+if (!m.find()) {
+    log.error(&quot;Could not find meta-refresh URL in Login2 response&quot;)
+    vars.put(&apos;refreshPath&apos;,&apos;&apos;)
+} else {
+    String fullUrl = m.group(1) 
+    log.info(&quot;Found full meta-refresh URL → &quot; + fullUrl)
+    
+    // 2) Turn that into a path+query for JMeter
+    URL u = new URL(fullUrl)
+    String pathAndQuery = u.path + (u.query ? &apos;?&apos;+u.query : &apos;&apos;)
+    vars.put(&apos;refreshPath&apos;, pathAndQuery)
+    log.info(&quot;Extracted refreshPath = &quot; + pathAndQuery)
+}</stringProp>
+            </JSR223PostProcessor>
+            <hashTree/>
+          </hashTree>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Callback" enabled="false">
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+              <collectionProp name="Arguments.arguments"/>
+            </elementProp>
+            <stringProp name="HTTPSampler.domain"></stringProp>
+            <stringProp name="HTTPSampler.port"></stringProp>
+            <stringProp name="HTTPSampler.protocol"></stringProp>
+            <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+            <stringProp name="HTTPSampler.path"></stringProp>
+            <stringProp name="HTTPSampler.method">GET</stringProp>
+            <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+            <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+            <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+            <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+            <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+            <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+            <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          </HTTPSamplerProxy>
+          <hashTree/>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Token" enabled="false">
+            <boolProp name="HTTPSampler.postBodyRaw">true</boolProp>
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments">
+              <collectionProp name="Arguments.arguments">
+                <elementProp name="" elementType="HTTPArgument">
+                  <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                  <stringProp name="Argument.value">grant_type=authorization_code&#xd;
+&amp;code=${code}&#xd;
+&amp;redirect_uri=https://btms-portal-frontend.perf-test.cdp-int.defra.cloud/signin-oidc&#xd;
+&amp;client_id=2fb0d715-affa-4bf1-836e-44a464e3fbea&#xd;
+&amp;code_verifier=${code_verifier}</stringProp>
+                  <stringProp name="Argument.metadata">=</stringProp>
+                </elementProp>
+              </collectionProp>
+            </elementProp>
+            <stringProp name="HTTPSampler.domain">cdp-defra-id-stub.perf-test.cdp-int.defra.cloud</stringProp>
+            <stringProp name="HTTPSampler.port"></stringProp>
+            <stringProp name="HTTPSampler.protocol">https</stringProp>
+            <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+            <stringProp name="HTTPSampler.path">/cdp-defra-id-stub/token</stringProp>
+            <stringProp name="HTTPSampler.method">POST</stringProp>
+            <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+            <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+            <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+            <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+            <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+            <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+            <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          </HTTPSamplerProxy>
+          <hashTree>
+            <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager" enabled="true">
+              <collectionProp name="HeaderManager.headers">
+                <elementProp name="" elementType="Header">
+                  <stringProp name="Header.name">Content-Type</stringProp>
+                  <stringProp name="Header.value">application/x-www-form-urlencoded</stringProp>
+                </elementProp>
+              </collectionProp>
+            </HeaderManager>
+            <hashTree/>
+            <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="JSON Extractor" enabled="true">
+              <stringProp name="JSONPostProcessor.referenceNames">access_token</stringProp>
+              <stringProp name="JSONPostProcessor.jsonPathExprs">$.access_token</stringProp>
+              <stringProp name="JSONPostProcessor.match_numbers"></stringProp>
+            </JSONPostProcessor>
+            <hashTree/>
+          </hashTree>
+          <DebugSampler guiclass="TestBeanGUI" testclass="DebugSampler" testname="Debug Sampler" enabled="false">
+            <boolProp name="displayJMeterProperties">true</boolProp>
+            <boolProp name="displayJMeterVariables">true</boolProp>
+            <boolProp name="displaySystemProperties">true</boolProp>
+          </DebugSampler>
+          <hashTree/>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Meta Refresh" enabled="false">
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+              <collectionProp name="Arguments.arguments"/>
+            </elementProp>
+            <stringProp name="HTTPSampler.domain">btms-portal-frontend.perf-test.cdp-int.defra.cloud</stringProp>
+            <stringProp name="HTTPSampler.port"></stringProp>
+            <stringProp name="HTTPSampler.protocol">https</stringProp>
+            <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+            <stringProp name="HTTPSampler.path">${refreshPath}</stringProp>
+            <stringProp name="HTTPSampler.method">GET</stringProp>
+            <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+            <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+            <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+            <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+            <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+            <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+            <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          </HTTPSamplerProxy>
+          <hashTree>
+            <JSR223PostProcessor guiclass="TestBeanGUI" testclass="JSR223PostProcessor" testname="JSR223 PostProcessor" enabled="true">
+              <stringProp name="scriptLanguage">groovy</stringProp>
+              <stringProp name="parameters"></stringProp>
+              <stringProp name="filename"></stringProp>
+              <stringProp name="cacheKey">true</stringProp>
+              <stringProp name="script">import org.apache.jmeter.protocol.http.control.CookieManager
+
+// grab the Cookie Manager (the first one in scope)
+CookieManager cm = ctx.getCurrentSampler().getCookieManager()
+
+if (cm == null) {
+    log.warn(&quot;No CookieManager found in this scope!&quot;)
+} else {
+    log.info(&quot;–––––––––– COOKIE DUMP ––––––––––&quot;)
+    cm.getCookies().each { c -&gt;
+        log.info(&quot;  domain=${c.domain} path=${c.path} name=${c.name} value=${c.value}&quot;)
+    }
+    log.info(&quot;––––––––––––––––––––––––––––––––&quot;)
+}</stringProp>
+            </JSR223PostProcessor>
+            <hashTree/>
+          </hashTree>
+        </hashTree>
+      </hashTree>
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Watcher" enabled="true">
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
+          <boolProp name="LoopController.continue_forever">false</boolProp>
+          <intProp name="LoopController.loops">-1</intProp>
+        </elementProp>
+        <stringProp name="ThreadGroup.num_threads">1</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">1</stringProp>
+        <boolProp name="ThreadGroup.scheduler">false</boolProp>
+        <stringProp name="ThreadGroup.duration"></stringProp>
+        <stringProp name="ThreadGroup.delay"></stringProp>
+        <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
+      </ThreadGroup>
+      <hashTree>
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Force Stop After Timeout" enabled="true">
+          <stringProp name="TestPlan.comments">90 Mins Max</stringProp>
+          <stringProp name="scriptLanguage">groovy</stringProp>
+          <stringProp name="parameters"></stringProp>
+          <stringProp name="filename"></stringProp>
+          <stringProp name="cacheKey">true</stringProp>
+          <stringProp name="script">import org.apache.jmeter.engine.JMeterEngine
+import org.apache.jmeter.threads.JMeterContextService
+
+SampleResult.setIgnore()
+
+long maxWait   = 90 * 60 * 1000L
+long waited    = 0L
+long interval  = 2 * 1000L
+
+List&lt;String&gt; threadGroupsToWatch = [&apos;CDS/ALVS&apos;,&apos;UI&apos;]
+
+while (waited &lt; maxWait) {
+    int active = JMeterContextService.getNumberOfThreads()
+    if (active &lt;= 1) {
+        return
+    }
+    Thread.sleep(interval)
+    waited += interval
+    log.info(&quot;waited:&quot; + waited)
+}
+log.info(&quot;Ending&quot;)
+JMeterEngine engine = JMeterContextService.getContext().getEngine()
+engine.stopTest(true)
+ctx.getEngine().stopTestNow()
+</stringProp>
+        </JSR223Sampler>
+        <hashTree/>
+      </hashTree>
       <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="false">
         <boolProp name="ResultCollector.error_logging">false</boolProp>
         <objProp>
@@ -1908,13 +2586,14 @@ SampleResult.setSuccessful(matched)
             <xml>false</xml>
             <fieldNames>true</fieldNames>
             <responseHeaders>false</responseHeaders>
-            <requestHeaders>false</requestHeaders>
+            <requestHeaders>true</requestHeaders>
             <responseDataOnError>false</responseDataOnError>
             <saveAssertionResultsFailureMessage>true</saveAssertionResultsFailureMessage>
             <assertionsResultsToSave>0</assertionsResultsToSave>
             <bytes>true</bytes>
             <sentBytes>true</sentBytes>
             <url>true</url>
+            <hostname>true</hostname>
             <threadCounts>true</threadCounts>
             <idleTime>true</idleTime>
             <connectTime>true</connectTime>
