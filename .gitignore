@@ -18,3 +18,4 @@ logs/
 results.jtl
 *-test-report.csv
 /?
+idsCreated.csv
