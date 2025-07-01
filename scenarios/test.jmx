@@ -226,10 +226,11 @@ prev.setIgnore()</stringProp>
         <hashTree/>
       </hashTree>
       <OpenModelThreadGroup guiclass="OpenModelThreadGroupGui" testclass="OpenModelThreadGroup" testname="CDS/ALVS" enabled="true">
-        <stringProp name="OpenModelThreadGroup.schedule">rate(60/min) even_arrivals(3 min) even_arrivals(1 min) rate(60/min) even_arrivals(3 min) even_arrivals(1 min) rate(90/min) even_arrivals(3 min) even_arrivals(1 min) rate(150/min) even_arrivals(3 min) even_arrivals(1 min) rate(210/min) even_arrivals(5 min) even_arrivals(1 min) rate(270/min) even_arrivals(30 min)</stringProp>
+        <stringProp name="OpenModelThreadGroup.schedule">rate(60/min) even_arrivals(3 min) even_arrivals(1 min) rate(60/min) even_arrivals(3 min) even_arrivals(1 min) rate(90/min) even_arrivals(3 min) even_arrivals(1 min) rate(150/min) even_arrivals(3 min) even_arrivals(1 min) rate(210/min) even_arrivals(5 min) even_arrivals(1 min) </stringProp>
         <stringProp name="OpenModelThreadGroup.random_seed"> </stringProp>
         <stringProp name="ThreadGroup.on_sample_error">stopthread</stringProp>
         <elementProp name="ThreadGroup.main_controller" elementType="OpenModelThreadGroupController"/>
+        <stringProp name="TestPlan.comments">rate(60/min) even_arrivals(3 min) even_arrivals(1 min) rate(60/min) even_arrivals(3 min) even_arrivals(1 min) rate(90/min) even_arrivals(3 min) even_arrivals(1 min) rate(150/min) even_arrivals(3 min) even_arrivals(1 min) rate(210/min) even_arrivals(5 min) even_arrivals(1 min) rate(270/min) even_arrivals(30 min)</stringProp>
       </OpenModelThreadGroup>
       <hashTree>
         <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="00.00 - Basic Scenario" enabled="true">
@@ -1882,9 +1883,9 @@ SampleResult.setSuccessful(matched)
           <intProp name="LoopController.loops">-1</intProp>
         </elementProp>
         <stringProp name="ThreadGroup.num_threads">300</stringProp>
-        <stringProp name="ThreadGroup.ramp_time">1200</stringProp>
+        <stringProp name="ThreadGroup.ramp_time">600</stringProp>
         <boolProp name="ThreadGroup.scheduler">true</boolProp>
-        <stringProp name="ThreadGroup.duration">3600</stringProp>
+        <stringProp name="ThreadGroup.duration">1800</stringProp>
         <stringProp name="ThreadGroup.delay">120</stringProp>
         <boolProp name="ThreadGroup.same_user_on_next_iteration">false</boolProp>
       </ThreadGroup>
@@ -2552,7 +2553,7 @@ import org.apache.jmeter.threads.JMeterContextService
 
 SampleResult.setIgnore()
 
-long maxWait   = 90 * 60 * 1000L
+long maxWait   = 45 * 60 * 1000L
 long waited    = 0L
 long interval  = 2 * 1000L
 
