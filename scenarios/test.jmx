@@ -226,7 +226,7 @@ prev.setIgnore()</stringProp>
         <hashTree/>
       </hashTree>
       <OpenModelThreadGroup guiclass="OpenModelThreadGroupGui" testclass="OpenModelThreadGroup" testname="CDS/ALVS" enabled="true">
-        <stringProp name="OpenModelThreadGroup.schedule">rate(60/min) even_arrivals(3 min) even_arrivals(1 min) rate(120/min) even_arrivals(3 min) even_arrivals(1 min) rate(180/min) even_arrivals(3 min) even_arrivals(1 min) rate(300/min) even_arrivals(3 min) even_arrivals(1 min) rate(420/min) even_arrivals(5 min) even_arrivals(1 min) rate(540/min) even_arrivals(30 min)</stringProp>
+        <stringProp name="OpenModelThreadGroup.schedule">rate(60/min) even_arrivals(3 min) even_arrivals(1 min) rate(60/min) even_arrivals(3 min) even_arrivals(1 min) rate(90/min) even_arrivals(3 min) even_arrivals(1 min) rate(150/min) even_arrivals(3 min) even_arrivals(1 min) rate(210/min) even_arrivals(5 min) even_arrivals(1 min) rate(270/min) even_arrivals(30 min)</stringProp>
         <stringProp name="OpenModelThreadGroup.random_seed"> </stringProp>
         <stringProp name="ThreadGroup.on_sample_error">stopthread</stringProp>
         <elementProp name="ThreadGroup.main_controller" elementType="OpenModelThreadGroupController"/>
@@ -1897,7 +1897,7 @@ SampleResult.setSuccessful(matched)
         <hashTree/>
         <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="Initialise" enabled="true">
           <boolProp name="TransactionController.includeTimers">false</boolProp>
-          <boolProp name="TransactionController.parent">false</boolProp>
+          <boolProp name="TransactionController.parent">true</boolProp>
         </TransactionController>
         <hashTree>
           <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Get Random Search Values" enabled="true">
@@ -2044,7 +2044,7 @@ SampleResult.setIgnore()</stringProp>
         </hashTree>
         <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="Do Searches" enabled="true">
           <boolProp name="TransactionController.includeTimers">false</boolProp>
-          <boolProp name="TransactionController.parent">false</boolProp>
+          <boolProp name="TransactionController.parent">true</boolProp>
         </TransactionController>
         <hashTree>
           <LoopController guiclass="LoopControlPanel" testclass="LoopController" testname="Loop" enabled="true">
@@ -2053,7 +2053,7 @@ SampleResult.setIgnore()</stringProp>
           </LoopController>
           <hashTree>
             <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Think Time" enabled="true">
-              <stringProp name="ConstantTimer.delay">2000</stringProp>
+              <stringProp name="ConstantTimer.delay">60000</stringProp>
             </ConstantTimer>
             <hashTree/>
             <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Search for Ducr" enabled="true">
@@ -2666,7 +2666,7 @@ ctx.getEngine().stopTest(true)</stringProp>
         </HTTPSamplerProxy>
         <hashTree/>
       </hashTree>
-      <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="false">
+      <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="true">
         <boolProp name="ResultCollector.error_logging">false</boolProp>
         <objProp>
           <name>saveConfig</name>
@@ -2704,7 +2704,7 @@ ctx.getEngine().stopTest(true)</stringProp>
         <stringProp name="filename"></stringProp>
       </ResultCollector>
       <hashTree/>
-      <ResultCollector guiclass="TableVisualizer" testclass="ResultCollector" testname="View Results in Table" enabled="true">
+      <ResultCollector guiclass="TableVisualizer" testclass="ResultCollector" testname="View Results in Table" enabled="false">
         <boolProp name="ResultCollector.error_logging">false</boolProp>
         <objProp>
           <name>saveConfig</name>
