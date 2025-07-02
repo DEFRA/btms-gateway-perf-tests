@@ -226,7 +226,7 @@ prev.setIgnore()</stringProp>
         <hashTree/>
       </hashTree>
       <OpenModelThreadGroup guiclass="OpenModelThreadGroupGui" testclass="OpenModelThreadGroup" testname="CDS/ALVS" enabled="true">
-        <stringProp name="OpenModelThreadGroup.schedule">rate(60/min) even_arrivals(3 min) even_arrivals(1 min) rate(60/min) even_arrivals(3 min) even_arrivals(1 min) rate(90/min) even_arrivals(3 min) even_arrivals(1 min) rate(150/min) even_arrivals(3 min) even_arrivals(1 min) rate(210/min) even_arrivals(5 min) even_arrivals(1 min) </stringProp>
+        <stringProp name="OpenModelThreadGroup.schedule">rate(60/min) even_arrivals(3 min) even_arrivals(1 min) rate(90/min) even_arrivals(3 min) even_arrivals(1 min) rate(120/min) even_arrivals(3 min) even_arrivals(1 min) rate(180/min) even_arrivals(3 min) even_arrivals(1 min) rate(240/min) even_arrivals(5 min) even_arrivals(1 min) rate(300/min) even_arrivals(5 min) even_arrivals(20 min) </stringProp>
         <stringProp name="OpenModelThreadGroup.random_seed"> </stringProp>
         <stringProp name="ThreadGroup.on_sample_error">stopthread</stringProp>
         <elementProp name="ThreadGroup.main_controller" elementType="OpenModelThreadGroupController"/>
@@ -1882,10 +1882,10 @@ SampleResult.setSuccessful(matched)
           <boolProp name="LoopController.continue_forever">false</boolProp>
           <intProp name="LoopController.loops">-1</intProp>
         </elementProp>
-        <stringProp name="ThreadGroup.num_threads">300</stringProp>
+        <stringProp name="ThreadGroup.num_threads">350</stringProp>
         <stringProp name="ThreadGroup.ramp_time">600</stringProp>
         <boolProp name="ThreadGroup.scheduler">true</boolProp>
-        <stringProp name="ThreadGroup.duration">1800</stringProp>
+        <stringProp name="ThreadGroup.duration">3300</stringProp>
         <stringProp name="ThreadGroup.delay">120</stringProp>
         <boolProp name="ThreadGroup.same_user_on_next_iteration">false</boolProp>
       </ThreadGroup>
@@ -1896,7 +1896,7 @@ SampleResult.setSuccessful(matched)
           <boolProp name="CookieManager.controlledByThreadGroup">false</boolProp>
         </CookieManager>
         <hashTree/>
-        <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="Initialise" enabled="true">
+        <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="03.00. UI Login" enabled="true">
           <boolProp name="TransactionController.includeTimers">false</boolProp>
           <boolProp name="TransactionController.parent">true</boolProp>
         </TransactionController>
@@ -1923,7 +1923,7 @@ if (!dataFile.exists() || dataFile.length()==0) {
 SampleResult.setIgnore()</stringProp>
           </JSR223Sampler>
           <hashTree/>
-          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="HomePage" enabled="true">
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="03.01. HomePage" enabled="true">
             <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
               <collectionProp name="Arguments.arguments"/>
             </elementProp>
@@ -1945,7 +1945,7 @@ SampleResult.setIgnore()</stringProp>
             <stringProp name="HTTPSampler.response_timeout"></stringProp>
           </HTTPSamplerProxy>
           <hashTree/>
-          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="sign-in" enabled="true">
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="03.02. sign-in" enabled="true">
             <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
               <collectionProp name="Arguments.arguments">
                 <elementProp name="" elementType="HTTPArgument">
@@ -1992,7 +1992,7 @@ SampleResult.setIgnore()</stringProp>
             </HtmlExtractor>
             <hashTree/>
           </hashTree>
-          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Select Identity" enabled="true">
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="03.03. Select Identity" enabled="true">
             <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
               <collectionProp name="Arguments.arguments"/>
             </elementProp>
@@ -2012,7 +2012,7 @@ SampleResult.setIgnore()</stringProp>
             <stringProp name="HTTPSampler.response_timeout"></stringProp>
           </HTTPSamplerProxy>
           <hashTree/>
-          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Search Page" enabled="true">
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="03.04. Land On Search Page" enabled="true">
             <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
               <collectionProp name="Arguments.arguments"/>
             </elementProp>
@@ -2043,7 +2043,7 @@ SampleResult.setIgnore()</stringProp>
             <hashTree/>
           </hashTree>
         </hashTree>
-        <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="Do Searches" enabled="true">
+        <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="04.00 UI Searches" enabled="true">
           <boolProp name="TransactionController.includeTimers">false</boolProp>
           <boolProp name="TransactionController.parent">true</boolProp>
         </TransactionController>
@@ -2057,7 +2057,7 @@ SampleResult.setIgnore()</stringProp>
               <stringProp name="ConstantTimer.delay">60000</stringProp>
             </ConstantTimer>
             <hashTree/>
-            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Search for Ducr" enabled="true">
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="04.01 Search for Ducr" enabled="true">
               <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
                 <collectionProp name="Arguments.arguments"/>
               </elementProp>
@@ -2087,7 +2087,7 @@ SampleResult.setIgnore()</stringProp>
               </ResponseAssertion>
               <hashTree/>
             </hashTree>
-            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Search for MRN" enabled="true">
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="04.02. Search for MRN" enabled="true">
               <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
                 <collectionProp name="Arguments.arguments"/>
               </elementProp>
@@ -2117,7 +2117,7 @@ SampleResult.setIgnore()</stringProp>
               </ResponseAssertion>
               <hashTree/>
             </hashTree>
-            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Search for CHED" enabled="true">
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="04.03. Search for CHED" enabled="true">
               <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
                 <collectionProp name="Arguments.arguments"/>
               </elementProp>
@@ -2147,7 +2147,7 @@ SampleResult.setIgnore()</stringProp>
               </ResponseAssertion>
               <hashTree/>
             </hashTree>
-            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="Search for MRN - Doesn&apos;t Exist" enabled="true">
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="04.04. Search for MRN that doesn&apos;t exist" enabled="true">
               <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
                 <collectionProp name="Arguments.arguments"/>
               </elementProp>
