@@ -2028,7 +2028,7 @@ SampleResult.setSuccessful(matched)
         <hashTree>
           <LoopController guiclass="LoopControlPanel" testclass="LoopController" testname="Loop" enabled="true">
             <boolProp name="LoopController.continue_forever">true</boolProp>
-            <stringProp name="LoopController.loops">10</stringProp>
+            <stringProp name="LoopController.loops">3</stringProp>
           </LoopController>
           <hashTree>
             <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Get Random Search Values" enabled="true">
@@ -2053,15 +2053,15 @@ if (!dataFile.exists() || dataFile.length()==0) {
 SampleResult.setIgnore()</stringProp>
             </JSR223Sampler>
             <hashTree/>
-            <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Think Time" enabled="true">
-              <stringProp name="ConstantTimer.delay">60000</stringProp>
-            </ConstantTimer>
-            <hashTree/>
             <LoopController guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
               <boolProp name="LoopController.continue_forever">true</boolProp>
               <stringProp name="LoopController.loops">1</stringProp>
             </LoopController>
             <hashTree>
+              <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Think Time" enabled="true">
+                <stringProp name="ConstantTimer.delay">60000</stringProp>
+              </ConstantTimer>
+              <hashTree/>
               <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="04.02. Search for MRN" enabled="true">
                 <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
                   <collectionProp name="Arguments.arguments"/>
@@ -2559,7 +2559,7 @@ import org.apache.jmeter.threads.JMeterContextService
 
 SampleResult.setIgnore()
 
-long maxWait   = 45 * 60 * 1000L
+long maxWait   = 90 * 60 * 1000L
 long waited    = 0L
 long interval  = 2 * 1000L
 
