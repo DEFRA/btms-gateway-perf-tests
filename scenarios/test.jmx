@@ -270,7 +270,7 @@ SampleResult.setIgnore()
         <hashTree/>
       </hashTree>
       <OpenModelThreadGroup guiclass="OpenModelThreadGroupGui" testclass="OpenModelThreadGroup" testname="CDS/ALVS" enabled="true">
-        <stringProp name="OpenModelThreadGroup.schedule">rate(60/min) even_arrivals(5 min) </stringProp>
+        <stringProp name="OpenModelThreadGroup.schedule">rate(60/min) even_arrivals(10 min) </stringProp>
         <stringProp name="OpenModelThreadGroup.random_seed"> </stringProp>
         <stringProp name="ThreadGroup.on_sample_error">stopthread</stringProp>
         <elementProp name="ThreadGroup.main_controller" elementType="OpenModelThreadGroupController"/>
@@ -1935,7 +1935,7 @@ SampleResult.setSuccessful(matched)
         <stringProp name="ThreadGroup.ramp_time">0</stringProp>
         <boolProp name="ThreadGroup.scheduler">true</boolProp>
         <stringProp name="ThreadGroup.duration">300</stringProp>
-        <stringProp name="ThreadGroup.delay">0</stringProp>
+        <stringProp name="ThreadGroup.delay">300</stringProp>
         <boolProp name="ThreadGroup.same_user_on_next_iteration">false</boolProp>
       </ThreadGroup>
       <hashTree>
@@ -2586,7 +2586,7 @@ if (cm == null) {
       <OpenModelThreadGroup guiclass="OpenModelThreadGroupGui" testclass="OpenModelThreadGroup" testname="PHA API" enabled="true">
         <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
         <elementProp name="ThreadGroup.main_controller" elementType="OpenModelThreadGroupController"/>
-        <stringProp name="OpenModelThreadGroup.schedule">rate(12/min) even_arrivals(5 min) </stringProp>
+        <stringProp name="OpenModelThreadGroup.schedule">rate(12/min) even_arrivals(10 min)</stringProp>
         <stringProp name="OpenModelThreadGroup.random_seed"></stringProp>
         <stringProp name="TestPlan.comments">rate(12/min) even_arrivals(5 min) even_arrivals(1 min) rate(30/min) even_arrivals(5 min) even_arrivals(1 min) rate(60/min) even_arrivals(30 min) even_arrivals(1 min) </stringProp>
       </OpenModelThreadGroup>
