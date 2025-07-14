@@ -45,6 +45,10 @@
         <stringProp name="ThreadGroup.delay"></stringProp>
       </SetupThreadGroup>
       <hashTree>
+        <Arguments guiclass="ArgumentsPanel" testclass="Arguments" testname="Development Only Variables - Disable before commit" enabled="false">
+          <collectionProp name="Arguments.arguments"/>
+        </Arguments>
+        <hashTree/>
         <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Initialise Environment Variables as Props" enabled="true">
           <stringProp name="scriptLanguage">groovy</stringProp>
           <stringProp name="parameters"></stringProp>
@@ -69,7 +73,8 @@ def expectedVars = [
     &quot;ServiceBus__Gmrs__ConnectionString&quot;: &quot;NODEFAULT&quot;,  
     &quot;ServiceBus__Gmrs__Protocol&quot;: &quot;https&quot;,
     &quot;InitialIpaffsCounterValue&quot;: &quot;7000000&quot;,
-    &quot;TradeImportsDataApi_AuthToken&quot;: &quot;NODEFAULT&quot;
+    &quot;TradeImportsDataApi_AuthToken&quot;: &quot;NODEFAULT&quot;,
+    &quot;TradeImportsDataApi_AuthToken2&quot;: &quot;NODEFAULT&quot;
 ]
 
 expectedVars.each { key, defaultValue -&gt;
@@ -224,13 +229,52 @@ prev.setIgnore()</stringProp>
           <boolProp name="displaySystemProperties">false</boolProp>
         </DebugSampler>
         <hashTree/>
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Set Test Data" enabled="true">
+          <stringProp name="scriptLanguage">groovy</stringProp>
+          <stringProp name="parameters"></stringProp>
+          <stringProp name="filename"></stringProp>
+          <stringProp name="cacheKey">true</stringProp>
+          <stringProp name="script">import groovy.json.JsonOutput
+
+def bcpsByPHA = [
+  a : [&apos;GBSEV25&apos;],
+  b : [&apos;GBDOV1P&apos;,&apos;GBDOV2P&apos;],
+  c : [&apos;GBDPE30&apos;],
+  d : [&apos;GBHUL21&apos;,&apos;BHLL4PP&apos;,&apos;GBHUL1G&apos;,&apos;GBKIL05&apos;],
+  e : [&apos;GBLHR4A&apos;,&apos;GBHRW1P&apos;,&apos;GBIPS1P&apos;],
+  f : [&apos;GBLHR1P&apos;,&apos;GBLHR4P&apos;],
+  g : [&apos;GBLGP1&apos;,&apos;GBTHP1&apos;,&apos;GBTIL1&apos;,&apos;GBLSH1&apos;,&apos;GBPUF04&apos;,&apos;GBTIL09&apos;,&apos;GBPLY15&apos;],
+  h : [&apos;GBLIV1&apos;],
+  i : [&apos;GBIMM19&apos;],
+  j : [&apos;GBTEEP1&apos;],
+  k : [&apos;GBSOU1&apos;],
+  l : [&apos;GBFXT1&apos;],
+  m : [&apos;GBTEEP1&apos;],
+  all : [&apos;&apos;]
+]
+
+bcpsByPHA.each { pha, list -&gt;
+    props.put(&quot;BCPS_${pha}&quot;, list.join(&apos;,&apos;))
+}
+
+props.put(&apos;BCPS_GROUPS&apos;, bcpsByPHA.keySet().join(&apos;,&apos;))
+
+def allBcps = bcpsByPHA.values().flatten()
+props.put(&apos;BCP_LIST&apos;, allBcps.join(&apos;,&apos;))
+
+props.put(&apos;BCPS_BY_PHA_JSON&apos;, JsonOutput.toJson(bcpsByPHA))
+
+SampleResult.setIgnore()
+</stringProp>
+        </JSR223Sampler>
+        <hashTree/>
       </hashTree>
       <OpenModelThreadGroup guiclass="OpenModelThreadGroupGui" testclass="OpenModelThreadGroup" testname="CDS/ALVS" enabled="true">
         <stringProp name="OpenModelThreadGroup.schedule">rate(60/min) even_arrivals(3 min) even_arrivals(1 min) rate(90/min) even_arrivals(3 min) even_arrivals(1 min) rate(120/min) even_arrivals(3 min) even_arrivals(1 min) rate(180/min) even_arrivals(3 min) even_arrivals(1 min) rate(240/min) even_arrivals(5 min) even_arrivals(1 min) rate(300/min) even_arrivals(5 min) even_arrivals(20 min) </stringProp>
         <stringProp name="OpenModelThreadGroup.random_seed"> </stringProp>
         <stringProp name="ThreadGroup.on_sample_error">stopthread</stringProp>
         <elementProp name="ThreadGroup.main_controller" elementType="OpenModelThreadGroupController"/>
-        <stringProp name="TestPlan.comments">rate(60/min) even_arrivals(3 min) even_arrivals(1 min) rate(60/min) even_arrivals(3 min) even_arrivals(1 min) rate(90/min) even_arrivals(3 min) even_arrivals(1 min) rate(150/min) even_arrivals(3 min) even_arrivals(1 min) rate(210/min) even_arrivals(5 min) even_arrivals(1 min) rate(270/min) even_arrivals(30 min)</stringProp>
+        <stringProp name="TestPlan.comments">rate(60/min) even_arrivals(3 min) even_arrivals(1 min) rate(90/min) even_arrivals(3 min) even_arrivals(1 min) rate(120/min) even_arrivals(3 min) even_arrivals(1 min) rate(180/min) even_arrivals(3 min) even_arrivals(1 min) rate(240/min) even_arrivals(5 min) even_arrivals(1 min) rate(300/min) even_arrivals(5 min) even_arrivals(20 min) </stringProp>
       </OpenModelThreadGroup>
       <hashTree>
         <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="00.00 - Basic Scenario" enabled="true">
@@ -498,7 +542,7 @@ prev.setIgnore()</stringProp>
       &quot;forImportOrAdmission&quot;: &quot;Definitive import&quot;,&#xd;
       &quot;purposeGroup&quot;: &quot;For Re-Import&quot;&#xd;
     },&#xd;
-    &quot;pointOfEntry&quot;: &quot;GBMNC4&quot;,&#xd;
+    &quot;pointOfEntry&quot;: &quot;${randomBcp}&quot;,&#xd;
     &quot;arrivalDate&quot;: &quot;2024-12-04&quot;,&#xd;
     &quot;arrivalTime&quot;: &quot;06:05:00&quot;,&#xd;
     &quot;transporter&quot;: {&#xd;
@@ -643,6 +687,25 @@ prev.setIgnore()</stringProp>
                 <boolProp name="CounterConfig.per_user">false</boolProp>
               </CounterConfig>
               <hashTree/>
+              <JSR223PreProcessor guiclass="TestBeanGUI" testclass="JSR223PreProcessor" testname="Generate random Notification data" enabled="true">
+                <stringProp name="scriptLanguage">groovy</stringProp>
+                <stringProp name="parameters"></stringProp>
+                <stringProp name="filename"></stringProp>
+                <stringProp name="cacheKey">true</stringProp>
+                <stringProp name="script">//def suffix = String.format(&quot;%07d&quot;, new Random().nextInt(1_000_000))
+
+def suffix = vars.get(&quot;ipaffsCounter&quot;)
+
+def ref = &quot;CHEDA.GB.2023.${suffix}&quot;
+//log.info(&apos;CHED: &apos; + ref)
+vars.put(&quot;referenceNumber&quot;, ref)
+
+
+def list = props.get(&apos;BCP_LIST&apos;).split(&apos;,&apos;)
+def rand = new Random().nextInt(list.size())
+vars.put(&apos;randomBcp&apos;, list[rand])</stringProp>
+              </JSR223PreProcessor>
+              <hashTree/>
               <JSR223PreProcessor guiclass="TestBeanGUI" testclass="JSR223PreProcessor" testname="Use Proxy" enabled="false">
                 <stringProp name="scriptLanguage">groovy</stringProp>
                 <stringProp name="parameters"></stringProp>
@@ -669,20 +732,6 @@ if (sampler instanceof HTTPSamplerBase) {
     log.info(&quot;Applied proxy config to sampler: ${proxyHost}:${proxyPort} (${proxyScheme})&quot;)
 }
 </stringProp>
-              </JSR223PreProcessor>
-              <hashTree/>
-              <JSR223PreProcessor guiclass="TestBeanGUI" testclass="JSR223PreProcessor" testname="Generate random Notification data" enabled="true">
-                <stringProp name="scriptLanguage">groovy</stringProp>
-                <stringProp name="parameters"></stringProp>
-                <stringProp name="filename"></stringProp>
-                <stringProp name="cacheKey">true</stringProp>
-                <stringProp name="script">//def suffix = String.format(&quot;%07d&quot;, new Random().nextInt(1_000_000))
-
-def suffix = vars.get(&quot;ipaffsCounter&quot;)
-
-def ref = &quot;CHEDA.GB.2023.${suffix}&quot;
-//log.info(&apos;CHED: &apos; + ref)
-vars.put(&quot;referenceNumber&quot;, ref)</stringProp>
               </JSR223PreProcessor>
               <hashTree/>
               <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="Headers" enabled="true">
@@ -1170,7 +1219,7 @@ vars.put(&apos;soapBody&apos;, soapXml)
       &quot;forImportOrAdmission&quot;: &quot;Definitive import&quot;,&#xd;
       &quot;purposeGroup&quot;: &quot;For Re-Import&quot;&#xd;
     },&#xd;
-    &quot;pointOfEntry&quot;: &quot;GBMNC4&quot;,&#xd;
+    &quot;pointOfEntry&quot;: &quot;${randomBcp}&quot;,&#xd;
     &quot;arrivalDate&quot;: &quot;2024-12-04&quot;,&#xd;
     &quot;arrivalTime&quot;: &quot;06:05:00&quot;,&#xd;
     &quot;transporter&quot;: {&#xd;
@@ -1719,7 +1768,7 @@ SampleResult.setIgnore()</stringProp>
                 <stringProp name="HTTPSampler.port"></stringProp>
                 <stringProp name="HTTPSampler.protocol">https</stringProp>
                 <stringProp name="HTTPSampler.contentEncoding"></stringProp>
-                <stringProp name="HTTPSampler.path">/comparisons/${mrn}</stringProp>
+                <stringProp name="HTTPSampler.path">/decisions/${mrn}/comparison</stringProp>
                 <stringProp name="HTTPSampler.method">GET</stringProp>
                 <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
                 <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
@@ -2534,6 +2583,164 @@ if (cm == null) {
           </hashTree>
         </hashTree>
       </hashTree>
+      <OpenModelThreadGroup guiclass="OpenModelThreadGroupGui" testclass="OpenModelThreadGroup" testname="PHA API" enabled="true">
+        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
+        <elementProp name="ThreadGroup.main_controller" elementType="OpenModelThreadGroupController"/>
+        <stringProp name="OpenModelThreadGroup.schedule">rate(12/min) even_arrivals(5 min) even_arrivals(1 min) rate(30/min) even_arrivals(5 min) even_arrivals(1 min) rate(60/min) even_arrivals(30 min) even_arrivals(1 min) </stringProp>
+        <stringProp name="OpenModelThreadGroup.random_seed"></stringProp>
+      </OpenModelThreadGroup>
+      <hashTree>
+        <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="05.00 PHA API" enabled="true">
+          <boolProp name="TransactionController.includeTimers">false</boolProp>
+          <boolProp name="TransactionController.parent">false</boolProp>
+        </TransactionController>
+        <hashTree/>
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="05.01 GetUpdates" enabled="true">
+          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+            <collectionProp name="Arguments.arguments">
+              <elementProp name="from" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">${from}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+                <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                <stringProp name="Argument.name">from</stringProp>
+              </elementProp>
+              <elementProp name="to" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">${to}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+                <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                <stringProp name="Argument.name">to</stringProp>
+              </elementProp>
+              <elementProp name="pointOfEntry" elementType="HTTPArgument">
+                <boolProp name="HTTPArgument.always_encode">false</boolProp>
+                <stringProp name="Argument.value">${currentBcps}</stringProp>
+                <stringProp name="Argument.metadata">=</stringProp>
+                <boolProp name="HTTPArgument.use_equals">true</boolProp>
+                <stringProp name="Argument.name">pointOfEntry</stringProp>
+              </elementProp>
+            </collectionProp>
+          </elementProp>
+          <stringProp name="HTTPSampler.domain">trade-imports-data-api.perf-test.cdp-int.defra.cloud</stringProp>
+          <stringProp name="HTTPSampler.port"></stringProp>
+          <stringProp name="HTTPSampler.protocol">https</stringProp>
+          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+          <stringProp name="HTTPSampler.path">/import-pre-notification-updates</stringProp>
+          <stringProp name="HTTPSampler.method">GET</stringProp>
+          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+          <boolProp name="HTTPSampler.DO_MULTIPART_POST">true</boolProp>
+          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+          <stringProp name="HTTPSampler.response_timeout"></stringProp>
+        </HTTPSamplerProxy>
+        <hashTree>
+          <JSR223PreProcessor guiclass="TestBeanGUI" testclass="JSR223PreProcessor" testname="JSR223 PreProcessor" enabled="true">
+            <stringProp name="scriptLanguage">groovy</stringProp>
+            <stringProp name="parameters"></stringProp>
+            <stringProp name="filename"></stringProp>
+            <stringProp name="cacheKey">true</stringProp>
+            <stringProp name="script">import java.time.OffsetDateTime
+import java.time.ZoneOffset
+import java.time.format.DateTimeFormatter
+import java.util.concurrent.ThreadLocalRandom
+
+def now = OffsetDateTime.now(ZoneOffset.UTC)
+vars.put(&apos;from&apos;, now.minusMinutes(5).format(DateTimeFormatter.ISO_INSTANT))
+vars.put(&apos;to&apos;, now.format(DateTimeFormatter.ISO_INSTANT))
+
+def groups = (props.get(&apos;BCPS_GROUPS&apos;)?:&apos;&apos;).split(&apos;,&apos;)
+def grp = groups[new Random().nextInt(groups.length)]
+def list = (props.get(&quot;BCPS_${grp}&quot;)?:&apos;&apos;).split(&apos;,&apos;)
+
+vars.put(&apos;randomInputBcp&apos;,
+    (props.get(&apos;BCP_LIST&apos;)?:&apos;&apos;).split(&apos;,&apos;)[new Random().nextInt((props.get(&apos;BCP_LIST&apos;)?:&apos;&apos;).split(&apos;,&apos;).length)]
+)
+
+vars.put(&apos;currentBcps&apos;, list.join(&apos;&amp;pointOfEntry=&apos;))
+</stringProp>
+          </JSR223PreProcessor>
+          <hashTree/>
+          <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager" enabled="true">
+            <collectionProp name="HeaderManager.headers">
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">Authorization</stringProp>
+                <stringProp name="Header.value">Basic ${__groovy(props.get(&quot;TradeImportsDataApi_AuthToken2&quot;))}</stringProp>
+              </elementProp>
+              <elementProp name="" elementType="Header">
+                <stringProp name="Header.name">Content-Type</stringProp>
+                <stringProp name="Header.value">application/json</stringProp>
+              </elementProp>
+            </collectionProp>
+          </HeaderManager>
+          <hashTree/>
+          <JSONPostProcessor guiclass="JSONPostProcessorGui" testclass="JSONPostProcessor" testname="JSON Extractor" enabled="true">
+            <stringProp name="JSONPostProcessor.referenceNames">cheds</stringProp>
+            <stringProp name="JSONPostProcessor.jsonPathExprs">$.importPreNotificationUpdates[*].referenceNumber</stringProp>
+            <stringProp name="JSONPostProcessor.match_numbers">-1</stringProp>
+          </JSONPostProcessor>
+          <hashTree/>
+        </hashTree>
+        <ForeachController guiclass="ForeachControlPanel" testclass="ForeachController" testname="ForEach Controller" enabled="true">
+          <stringProp name="ForeachController.inputVal">cheds</stringProp>
+          <stringProp name="ForeachController.returnVal">currentChed</stringProp>
+          <boolProp name="ForeachController.useSeparator">true</boolProp>
+          <stringProp name="ForeachController.startIndex">0</stringProp>
+          <stringProp name="ForeachController.endIndex">100</stringProp>
+        </ForeachController>
+        <hashTree>
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="05.02 GetChed" enabled="true">
+            <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
+              <collectionProp name="Arguments.arguments"/>
+            </elementProp>
+            <stringProp name="HTTPSampler.domain">trade-imports-data-api.perf-test.cdp-int.defra.cloud</stringProp>
+            <stringProp name="HTTPSampler.port"></stringProp>
+            <stringProp name="HTTPSampler.protocol">https</stringProp>
+            <stringProp name="HTTPSampler.contentEncoding"></stringProp>
+            <stringProp name="HTTPSampler.path">import-pre-notifications/${currentChed}</stringProp>
+            <stringProp name="HTTPSampler.method">GET</stringProp>
+            <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
+            <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
+            <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
+            <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
+            <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
+            <stringProp name="HTTPSampler.connect_timeout"></stringProp>
+            <stringProp name="HTTPSampler.response_timeout"></stringProp>
+          </HTTPSamplerProxy>
+          <hashTree>
+            <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager" enabled="true">
+              <collectionProp name="HeaderManager.headers">
+                <elementProp name="" elementType="Header">
+                  <stringProp name="Header.name">Authorization</stringProp>
+                  <stringProp name="Header.value">Basic ${__groovy(props.get(&quot;TradeImportsDataApi_AuthToken2&quot;))}</stringProp>
+                </elementProp>
+                <elementProp name="" elementType="Header">
+                  <stringProp name="Header.name">Content-Type</stringProp>
+                  <stringProp name="Header.value">application/json</stringProp>
+                </elementProp>
+              </collectionProp>
+            </HeaderManager>
+            <hashTree/>
+            <JSR223PostProcessor guiclass="TestBeanGUI" testclass="JSR223PostProcessor" testname="JSR223 PostProcessor" enabled="false">
+              <stringProp name="scriptLanguage">groovy</stringProp>
+              <stringProp name="parameters"></stringProp>
+              <stringProp name="filename"></stringProp>
+              <stringProp name="cacheKey">true</stringProp>
+              <stringProp name="script">import groovy.json.JsonSlurper
+
+
+def json = new JsonSlurper().parseText(prev.getResponseDataAsString())
+def fullId = json.importPreNotification
+def id = fullId[-7..-1]
+props.put(&apos;InitialIpaffsCounterValue&apos;,(id.toInteger() + 1).toString())
+
+prev.setIgnore()</stringProp>
+            </JSR223PostProcessor>
+            <hashTree/>
+          </hashTree>
+        </hashTree>
+      </hashTree>
       <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Watcher" enabled="true">
         <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
         <elementProp name="ThreadGroup.main_controller" elementType="LoopController" guiclass="LoopControlPanel" testclass="LoopController" testname="Loop Controller" enabled="true">
@@ -2646,34 +2853,7 @@ ctx.getEngine().stopTest(true)</stringProp>
         </HTTPSamplerProxy>
         <hashTree/>
       </hashTree>
-      <OpenModelThreadGroup guiclass="OpenModelThreadGroupGui" testclass="OpenModelThreadGroup" testname="PHA API" enabled="false">
-        <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
-        <elementProp name="ThreadGroup.main_controller" elementType="OpenModelThreadGroupController"/>
-        <stringProp name="OpenModelThreadGroup.schedule"></stringProp>
-        <stringProp name="OpenModelThreadGroup.random_seed"></stringProp>
-      </OpenModelThreadGroup>
-      <hashTree>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="HTTP Request" enabled="true">
-          <elementProp name="HTTPsampler.Arguments" elementType="Arguments" guiclass="HTTPArgumentsPanel" testclass="Arguments" testname="User Defined Variables" enabled="true">
-            <collectionProp name="Arguments.arguments"/>
-          </elementProp>
-          <stringProp name="HTTPSampler.domain"></stringProp>
-          <stringProp name="HTTPSampler.port"></stringProp>
-          <stringProp name="HTTPSampler.protocol"></stringProp>
-          <stringProp name="HTTPSampler.contentEncoding"></stringProp>
-          <stringProp name="HTTPSampler.path"></stringProp>
-          <stringProp name="HTTPSampler.method">GET</stringProp>
-          <boolProp name="HTTPSampler.follow_redirects">true</boolProp>
-          <boolProp name="HTTPSampler.auto_redirects">false</boolProp>
-          <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
-          <boolProp name="HTTPSampler.DO_MULTIPART_POST">false</boolProp>
-          <stringProp name="HTTPSampler.embedded_url_re"></stringProp>
-          <stringProp name="HTTPSampler.connect_timeout"></stringProp>
-          <stringProp name="HTTPSampler.response_timeout"></stringProp>
-        </HTTPSamplerProxy>
-        <hashTree/>
-      </hashTree>
-      <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="true">
+      <ResultCollector guiclass="ViewResultsFullVisualizer" testclass="ResultCollector" testname="View Results Tree" enabled="false">
         <boolProp name="ResultCollector.error_logging">false</boolProp>
         <objProp>
           <name>saveConfig</name>
