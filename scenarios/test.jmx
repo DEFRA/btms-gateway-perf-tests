@@ -203,15 +203,24 @@ Map parseAsbConnectionString(String str) {
             <stringProp name="filename"></stringProp>
             <stringProp name="cacheKey">true</stringProp>
             <stringProp name="script">import groovy.json.JsonSlurper
+import org.apache.jorphan.util.JMeterStopTestException
 
-
-def json = new JsonSlurper().parseText(prev.getResponseDataAsString())
+def json   = new JsonSlurper().parseText(prev.getResponseDataAsString())
 def fullId = json.importPreNotification
-def id = fullId[-7..-1]
-props.put(&apos;InitialIpaffsCounterValue&apos;,(id.toInteger() + 1).toString())
+def idStr  = fullId[-7..-1]
 
-prev.setIgnore()
-</stringProp>
+if (!(idStr ==~ /\d+/)) {
+    throw new JMeterStopTestException(&quot;Non-numeric ID suffix: &apos;${idStr}&apos;&quot;)
+}
+
+def id = idStr.toInteger()
+
+if (id &gt; 9999999) {
+    throw new JMeterStopTestException(&quot;ID ${id} &gt; 9900000 — stopping test.&quot;)
+}
+
+props.put(&apos;InitialIpaffsCounterValue&apos;, (id + 1).toString())
+prev.setIgnore()</stringProp>
           </JSR223PostProcessor>
           <hashTree/>
           <HeaderManager guiclass="HeaderPanel" testclass="HeaderManager" testname="HTTP Header Manager" enabled="true">
@@ -698,7 +707,7 @@ SampleResult.setIgnore()
 def suffix = vars.get(&quot;ipaffsCounter&quot;)
 
 def ref = &quot;CHEDA.GB.2023.${suffix}&quot;
-//log.info(&apos;CHED: &apos; + ref)
+//log.error(&apos;CHED: &apos; + ref)
 vars.put(&quot;referenceNumber&quot;, ref)
 
 
