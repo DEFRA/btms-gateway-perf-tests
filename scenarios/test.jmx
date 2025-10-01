@@ -5,6 +5,8 @@
       <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
         <collectionProp name="Arguments.arguments"/>
       </elementProp>
+      <boolProp name="TestPlan.functional_mode">false</boolProp>
+      <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
     </TestPlan>
     <hashTree>
       <ConfigTestElement guiclass="HttpDefaultsGui" testclass="ConfigTestElement" testname="Set Https Proxy" enabled="false">
@@ -266,20 +268,19 @@ SampleResult.setIgnore()
         <elementProp name="ThreadGroup.main_controller" elementType="OpenModelThreadGroupController"/>
       </OpenModelThreadGroup>
       <hashTree>
-        <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="00.00 - Basic Scenario">
+        <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="00.00 - Basic Scenario" enabled="true">
           <boolProp name="TransactionController.includeTimers">false</boolProp>
         </TransactionController>
         <hashTree>
-          <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="01.00 Test">
-            <boolProp name="TransactionController.parent">true</boolProp>
+          <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="01.00 Test" enabled="true">
             <boolProp name="TransactionController.includeTimers">false</boolProp>
           </TransactionController>
           <hashTree>
-            <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Wait between each request">
+            <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Wait between each request" enabled="true">
               <stringProp name="ConstantTimer.delay">10000</stringProp>
             </ConstantTimer>
             <hashTree/>
-            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="01.01. Send Notification">
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="01.01. Send Notification" enabled="true">
               <stringProp name="HTTPSampler.proxyScheme">https</stringProp>
               <stringProp name="HTTPSampler.proxyHost">${__P(https.proxyHost,)}</stringProp>
               <stringProp name="HTTPSampler.proxyPort">${__P(https.proxyPort,)}</stringProp>
@@ -659,7 +660,7 @@ SampleResult.setIgnore()
               <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
             </HTTPSamplerProxy>
             <hashTree>
-              <CounterConfig guiclass="CounterConfigGui" testclass="CounterConfig" testname="ipaffsCounter">
+              <CounterConfig guiclass="CounterConfigGui" testclass="CounterConfig" testname="ipaffsCounter" enabled="true">
                 <stringProp name="CounterConfig.start">${__groovy(Integer.parseInt(props.get(&quot;InitialIpaffsCounterValue&quot;)))}</stringProp>
                 <stringProp name="CounterConfig.end">9999999</stringProp>
                 <stringProp name="CounterConfig.incr">1</stringProp>
@@ -668,7 +669,7 @@ SampleResult.setIgnore()
                 <boolProp name="CounterConfig.per_user">false</boolProp>
               </CounterConfig>
               <hashTree/>
-              <JSR223PreProcessor guiclass="TestBeanGUI" testclass="JSR223PreProcessor" testname="Generate random Notification data">
+              <JSR223PreProcessor guiclass="TestBeanGUI" testclass="JSR223PreProcessor" testname="Generate random Notification data" enabled="true">
                 <stringProp name="scriptLanguage">groovy</stringProp>
                 <stringProp name="parameters"></stringProp>
                 <stringProp name="filename"></stringProp>
@@ -738,7 +739,7 @@ prev.setSampleLabel(&apos;Send Notification: &apos; + vars.get(&apos;referenceNu
               </JSR223PostProcessor>
               <hashTree/>
             </hashTree>
-            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="01.02. Send Clearance Request">
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="01.02. Send Clearance Request" enabled="true">
               <stringProp name="HTTPSampler.domain">${__groovy(props.get(&apos;BtmsGateway__Host&apos;))}</stringProp>
               <stringProp name="HTTPSampler.protocol">https</stringProp>
               <stringProp name="HTTPSampler.path">/ITSW/CDS/SubmitImportDocumentCDSFacadeService</stringProp>
@@ -757,12 +758,13 @@ prev.setSampleLabel(&apos;Send Notification: &apos; + vars.get(&apos;referenceNu
               </elementProp>
             </HTTPSamplerProxy>
             <hashTree>
-              <JSR223PreProcessor guiclass="TestBeanGUI" testclass="JSR223PreProcessor" testname="Prepare SOAP body">
+              <JSR223PreProcessor guiclass="TestBeanGUI" testclass="JSR223PreProcessor" testname="Prepare SOAP body" enabled="true">
                 <stringProp name="scriptLanguage">groovy</stringProp>
                 <stringProp name="parameters"></stringProp>
                 <stringProp name="filename"></stringProp>
                 <stringProp name="cacheKey">true</stringProp>
                 <stringProp name="script">import java.time.ZonedDateTime
+import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
 import java.text.SimpleDateFormat
 
@@ -942,7 +944,7 @@ vars.put(&apos;soapBody&apos;, soapXml)
               </JSR223PostProcessor>
               <hashTree/>
             </hashTree>
-            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="01.03. Send Notification Update">
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="01.03. Send Notification Update" enabled="true">
               <stringProp name="HTTPSampler.proxyScheme">https</stringProp>
               <stringProp name="HTTPSampler.proxyHost">${__P(https.proxyHost,)}</stringProp>
               <stringProp name="HTTPSampler.proxyPort">${__P(https.proxyPort,)}</stringProp>
@@ -1384,7 +1386,7 @@ vars.put(&quot;referenceNumber&quot;, ref)</stringProp>
               </JSR223PostProcessor>
               <hashTree/>
             </hashTree>
-            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="01.04. Send GMR">
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="01.04. Send GMR" enabled="true">
               <stringProp name="HTTPSampler.proxyScheme">https</stringProp>
               <stringProp name="HTTPSampler.proxyHost">${__P(https.proxyHost,)}</stringProp>
               <stringProp name="HTTPSampler.proxyPort">${__P(https.proxyPort,)}</stringProp>
@@ -1506,7 +1508,7 @@ vars.put(&quot;id&quot;, id)</stringProp>
               </JSR223PostProcessor>
               <hashTree/>
             </hashTree>
-            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="01.05. Send ALVS Decision">
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="01.05. Send ALVS Decision" enabled="true">
               <stringProp name="HTTPSampler.domain">${__groovy(props.get(&apos;BtmsGateway__Host&apos;))}</stringProp>
               <stringProp name="HTTPSampler.protocol">https</stringProp>
               <stringProp name="HTTPSampler.path">/ws/CDS/defra/alvsclearanceinbound/v1</stringProp>
@@ -1588,7 +1590,7 @@ vars.put(&quot;id&quot;, id)</stringProp>
               </elementProp>
             </HTTPSamplerProxy>
             <hashTree/>
-            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="01.06. Send Finalisation">
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="01.06. Send Finalisation" enabled="true">
               <stringProp name="HTTPSampler.domain">${__groovy(props.get(&apos;BtmsGateway__Host&apos;))}</stringProp>
               <stringProp name="HTTPSampler.protocol">https</stringProp>
               <stringProp name="HTTPSampler.path">/ITSW/CDS/NotifyFinalisedStateCDSFacadeService</stringProp>
@@ -1771,7 +1773,7 @@ try {
                 <hashTree/>
               </hashTree>
             </hashTree>
-            <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="02.02. Check Result" enabled="true">
+            <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="02.02. Check Result">
               <stringProp name="scriptLanguage">groovy</stringProp>
               <stringProp name="parameters"></stringProp>
               <stringProp name="filename"></stringProp>
@@ -1865,7 +1867,7 @@ SampleResult.setSuccessful(matched)
         </JSR223Sampler>
         <hashTree/>
       </hashTree>
-      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="UI">
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="UI" enabled="true">
         <intProp name="ThreadGroup.num_threads">140</intProp>
         <intProp name="ThreadGroup.ramp_time">60</intProp>
         <longProp name="ThreadGroup.duration">600</longProp>
