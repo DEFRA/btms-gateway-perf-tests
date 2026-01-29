@@ -5,6 +5,8 @@
       <elementProp name="TestPlan.user_defined_variables" elementType="Arguments" guiclass="ArgumentsPanel" testclass="Arguments" testname="User Defined Variables">
         <collectionProp name="Arguments.arguments"/>
       </elementProp>
+      <boolProp name="TestPlan.functional_mode">false</boolProp>
+      <boolProp name="TestPlan.serialize_threadgroups">false</boolProp>
     </TestPlan>
     <hashTree>
       <ConfigTestElement guiclass="HttpDefaultsGui" testclass="ConfigTestElement" testname="Set Https Proxy" enabled="false">
@@ -163,7 +165,7 @@ Map parseAsbConnectionString(String str) {
 </stringProp>
         </JSR223Sampler>
         <hashTree/>
-        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GetMaxIpaffsId">
+        <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="GetMaxIpaffsId" enabled="true">
           <stringProp name="HTTPSampler.domain">trade-imports-data-api.perf-test.cdp-int.defra.cloud</stringProp>
           <stringProp name="HTTPSampler.protocol">https</stringProp>
           <stringProp name="HTTPSampler.path">admin/max-id</stringProp>
@@ -218,7 +220,7 @@ prev.setIgnore()</stringProp>
           <boolProp name="displaySystemProperties">false</boolProp>
         </DebugSampler>
         <hashTree/>
-        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Set Test Data">
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Set Test Data" enabled="true">
           <stringProp name="scriptLanguage">groovy</stringProp>
           <stringProp name="parameters"></stringProp>
           <stringProp name="filename"></stringProp>
@@ -270,15 +272,15 @@ SampleResult.setIgnore()
           <boolProp name="TransactionController.includeTimers">false</boolProp>
         </TransactionController>
         <hashTree>
-          <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="01.00 Test">
+          <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="01.00 Test" enabled="true">
             <boolProp name="TransactionController.includeTimers">false</boolProp>
           </TransactionController>
           <hashTree>
-            <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Wait between each request">
+            <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Wait between each request" enabled="true">
               <stringProp name="ConstantTimer.delay">10000</stringProp>
             </ConstantTimer>
             <hashTree/>
-            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="01.01. Send Notification" enabled="true">
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="01.01. Send Notification">
               <stringProp name="HTTPSampler.proxyScheme">https</stringProp>
               <stringProp name="HTTPSampler.proxyHost">${__P(https.proxyHost,)}</stringProp>
               <stringProp name="HTTPSampler.proxyPort">${__P(https.proxyPort,)}</stringProp>
@@ -737,7 +739,7 @@ prev.setSampleLabel(&apos;Send Notification: &apos; + vars.get(&apos;referenceNu
               </JSR223PostProcessor>
               <hashTree/>
             </hashTree>
-            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="01.02. Send Clearance Request" enabled="true">
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="01.02. Send Clearance Request">
               <stringProp name="HTTPSampler.domain">${__groovy(props.get(&apos;BtmsGateway__Host&apos;))}</stringProp>
               <stringProp name="HTTPSampler.protocol">https</stringProp>
               <stringProp name="HTTPSampler.path">/ITSW/CDS/SubmitImportDocumentCDSFacadeService</stringProp>
@@ -756,7 +758,7 @@ prev.setSampleLabel(&apos;Send Notification: &apos; + vars.get(&apos;referenceNu
               </elementProp>
             </HTTPSamplerProxy>
             <hashTree>
-              <JSR223PreProcessor guiclass="TestBeanGUI" testclass="JSR223PreProcessor" testname="Prepare SOAP body" enabled="true">
+              <JSR223PreProcessor guiclass="TestBeanGUI" testclass="JSR223PreProcessor" testname="Prepare SOAP body">
                 <stringProp name="scriptLanguage">groovy</stringProp>
                 <stringProp name="parameters"></stringProp>
                 <stringProp name="filename"></stringProp>
@@ -847,7 +849,7 @@ def soapXml = &quot;&quot;&quot;
       &lt;Item&gt;
         &lt;ItemNumber&gt;2&lt;/ItemNumber&gt;
         &lt;CustomsProcedureCode&gt;4000000&lt;/CustomsProcedureCode&gt;
-        &lt;TaricCommodityCode&gt;0307600000&lt;/TaricCommodityCode&gt;
+        &lt;TaricCommodityCode&gt;0907600000&lt;/TaricCommodityCode&gt;
         &lt;GoodsDescription&gt;1 CARTON OF LIVE SNAILS&lt;/GoodsDescription&gt;
         &lt;ConsigneeId&gt;GB999900746000&lt;/ConsigneeId&gt;
         &lt;ConsigneeName&gt;GB999900746000&lt;/ConsigneeName&gt;
@@ -942,7 +944,7 @@ vars.put(&apos;soapBody&apos;, soapXml)
               </JSR223PostProcessor>
               <hashTree/>
             </hashTree>
-            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="01.03. Send Notification Update" enabled="true">
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="01.03. Send Notification Update">
               <stringProp name="HTTPSampler.proxyScheme">https</stringProp>
               <stringProp name="HTTPSampler.proxyHost">${__P(https.proxyHost,)}</stringProp>
               <stringProp name="HTTPSampler.proxyPort">${__P(https.proxyPort,)}</stringProp>
@@ -1657,7 +1659,7 @@ if (!prev.isSuccessful()) {
             </JSR223PostProcessor>
             <hashTree/>
           </hashTree>
-          <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Save ids to file">
+          <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Save ids to file" enabled="true">
             <stringProp name="scriptLanguage">groovy</stringProp>
             <stringProp name="parameters"></stringProp>
             <stringProp name="filename"></stringProp>
@@ -1885,7 +1887,7 @@ SampleResult.setSuccessful(matched)
           <boolProp name="CookieManager.controlledByThreadGroup">false</boolProp>
         </CookieManager>
         <hashTree/>
-        <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="03.00. UI Login">
+        <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="03.00. UI Login" enabled="true">
           <boolProp name="TransactionController.parent">true</boolProp>
           <boolProp name="TransactionController.includeTimers">false</boolProp>
         </TransactionController>
@@ -1965,7 +1967,7 @@ SampleResult.setSuccessful(matched)
             <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
           </HTTPSamplerProxy>
           <hashTree/>
-          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="03.04. Land On Search Page">
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="03.04. Land On Search Page" enabled="true">
             <stringProp name="HTTPSampler.domain">btms-portal-frontend.perf-test.cdp-int.defra.cloud</stringProp>
             <stringProp name="HTTPSampler.protocol">https</stringProp>
             <stringProp name="HTTPSampler.path">/search</stringProp>
@@ -1990,7 +1992,7 @@ SampleResult.setSuccessful(matched)
             <hashTree/>
           </hashTree>
         </hashTree>
-        <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="04.00 UI Searches">
+        <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="04.00 UI Searches" enabled="true">
           <boolProp name="TransactionController.parent">true</boolProp>
           <boolProp name="TransactionController.includeTimers">false</boolProp>
         </TransactionController>
@@ -2000,7 +2002,7 @@ SampleResult.setSuccessful(matched)
             <stringProp name="LoopController.loops">3</stringProp>
           </LoopController>
           <hashTree>
-            <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Get Random Search Values">
+            <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Get Random Search Values" enabled="true">
               <stringProp name="scriptLanguage">groovy</stringProp>
               <stringProp name="parameters"></stringProp>
               <stringProp name="filename"></stringProp>
@@ -2031,7 +2033,7 @@ SampleResult.setIgnore()</stringProp>
                 <stringProp name="ConstantTimer.delay">60000</stringProp>
               </ConstantTimer>
               <hashTree/>
-              <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="04.01. Search for MRN">
+              <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="04.01. Search for MRN" enabled="true">
                 <stringProp name="HTTPSampler.domain">btms-portal-frontend.perf-test.cdp-int.defra.cloud</stringProp>
                 <stringProp name="HTTPSampler.protocol">https</stringProp>
                 <stringProp name="HTTPSampler.path">search-result?searchTerm=${mrn} </stringProp>
@@ -2054,7 +2056,7 @@ SampleResult.setIgnore()</stringProp>
                 </ResponseAssertion>
                 <hashTree/>
               </hashTree>
-              <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="04.02 Search for Ducr">
+              <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="04.02 Search for Ducr" enabled="true">
                 <stringProp name="HTTPSampler.domain">btms-portal-frontend.perf-test.cdp-int.defra.cloud</stringProp>
                 <stringProp name="HTTPSampler.protocol">https</stringProp>
                 <stringProp name="HTTPSampler.path">search-result?searchTerm=${ducr} </stringProp>
@@ -2077,7 +2079,7 @@ SampleResult.setIgnore()</stringProp>
                 </ResponseAssertion>
                 <hashTree/>
               </hashTree>
-              <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="04.03. Search for CHED">
+              <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="04.03. Search for CHED" enabled="true">
                 <stringProp name="HTTPSampler.domain">btms-portal-frontend.perf-test.cdp-int.defra.cloud</stringProp>
                 <stringProp name="HTTPSampler.protocol">https</stringProp>
                 <stringProp name="HTTPSampler.path">search-result?searchTerm=${ched} </stringProp>
@@ -2100,7 +2102,7 @@ SampleResult.setIgnore()</stringProp>
                 </ResponseAssertion>
                 <hashTree/>
               </hashTree>
-              <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="04.04. Search for MRN that doesn&apos;t exist">
+              <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="04.04. Search for MRN that doesn&apos;t exist" enabled="true">
                 <stringProp name="HTTPSampler.domain">btms-portal-frontend.perf-test.cdp-int.defra.cloud</stringProp>
                 <stringProp name="HTTPSampler.protocol">https</stringProp>
                 <stringProp name="HTTPSampler.path">search-result?searchTerm=${notAnMrn} </stringProp>
@@ -2139,7 +2141,7 @@ vars.put(&quot;notAnMrn&quot;, notAnMrn )</stringProp>
             </hashTree>
           </hashTree>
         </hashTree>
-        <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="05.00. Reporting">
+        <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="05.00. Reporting" enabled="true">
           <boolProp name="TransactionController.parent">true</boolProp>
           <boolProp name="TransactionController.includeTimers">false</boolProp>
         </TransactionController>
@@ -2148,7 +2150,7 @@ vars.put(&quot;notAnMrn&quot;, notAnMrn )</stringProp>
             <stringProp name="ConstantTimer.delay">10000</stringProp>
           </ConstantTimer>
           <hashTree/>
-          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="05.01. View Report Page">
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="05.01. View Report Page" enabled="true">
             <stringProp name="HTTPSampler.domain">btms-portal-frontend.perf-test.cdp-int.defra.cloud</stringProp>
             <stringProp name="HTTPSampler.protocol">https</stringProp>
             <stringProp name="HTTPSampler.path">/reporting</stringProp>
@@ -2162,7 +2164,7 @@ vars.put(&quot;notAnMrn&quot;, notAnMrn )</stringProp>
             <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
           </HTTPSamplerProxy>
           <hashTree>
-            <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Response Assertion">
+            <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Response Assertion" enabled="true">
               <collectionProp name="Asserion.test_strings">
                 <stringProp name="-1046009340">BTMS reporting data</stringProp>
               </collectionProp>
@@ -2490,18 +2492,18 @@ if (cm == null) {
         </elementProp>
       </ThreadGroup>
       <hashTree>
-        <CookieManager guiclass="CookiePanel" testclass="CookieManager" testname="HTTP Cookie Manager">
+        <CookieManager guiclass="CookiePanel" testclass="CookieManager" testname="HTTP Cookie Manager" enabled="true">
           <collectionProp name="CookieManager.cookies"/>
           <boolProp name="CookieManager.clearEachIteration">true</boolProp>
           <boolProp name="CookieManager.controlledByThreadGroup">false</boolProp>
         </CookieManager>
         <hashTree/>
-        <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="06.00. UI Login">
+        <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="06.00. UI Login" enabled="true">
           <boolProp name="TransactionController.parent">true</boolProp>
           <boolProp name="TransactionController.includeTimers">false</boolProp>
         </TransactionController>
         <hashTree>
-          <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Think Time">
+          <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Think Time" enabled="true">
             <stringProp name="ConstantTimer.delay">10000</stringProp>
           </ConstantTimer>
           <hashTree/>
@@ -2601,16 +2603,16 @@ if (cm == null) {
             <hashTree/>
           </hashTree>
         </hashTree>
-        <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="07.00. Reporting - Large Range">
+        <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="07.00. Reporting - Large Range" enabled="true">
           <boolProp name="TransactionController.parent">true</boolProp>
           <boolProp name="TransactionController.includeTimers">false</boolProp>
         </TransactionController>
         <hashTree>
-          <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Think Time">
+          <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Think Time" enabled="true">
             <stringProp name="ConstantTimer.delay">60000</stringProp>
           </ConstantTimer>
           <hashTree/>
-          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="07.01. View Report for past 3 months">
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="07.01. View Report for past 3 months" enabled="true">
             <stringProp name="HTTPSampler.domain">btms-portal-frontend.perf-test.cdp-int.defra.cloud</stringProp>
             <stringProp name="HTTPSampler.protocol">https</stringProp>
             <stringProp name="HTTPSampler.path">/reporting</stringProp>
@@ -2639,7 +2641,7 @@ if (cm == null) {
             <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
           </HTTPSamplerProxy>
           <hashTree>
-            <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Response Code">
+            <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Response Code" enabled="true">
               <collectionProp name="Asserion.test_strings">
                 <stringProp name="49586">200</stringProp>
               </collectionProp>
@@ -2649,7 +2651,7 @@ if (cm == null) {
               <intProp name="Assertion.test_type">16</intProp>
             </ResponseAssertion>
             <hashTree/>
-            <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Correct Page">
+            <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Correct Page" enabled="true">
               <collectionProp name="Asserion.test_strings">
                 <stringProp name="-1046009340">BTMS reporting data</stringProp>
               </collectionProp>
@@ -2659,7 +2661,7 @@ if (cm == null) {
               <intProp name="Assertion.test_type">16</intProp>
             </ResponseAssertion>
             <hashTree/>
-            <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="No Errors">
+            <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="No Errors" enabled="true">
               <collectionProp name="Asserion.test_strings">
                 <stringProp name="-546616634">There is a problem</stringProp>
               </collectionProp>
@@ -2989,7 +2991,7 @@ if (cm == null) {
         </elementProp>
       </ThreadGroup>
       <hashTree>
-        <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="06.00 PHA API">
+        <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="06.00 PHA API" enabled="true">
           <boolProp name="TransactionController.parent">true</boolProp>
           <boolProp name="TransactionController.includeTimers">false</boolProp>
         </TransactionController>
@@ -2998,7 +3000,7 @@ if (cm == null) {
             <stringProp name="ConstantTimer.delay">60000</stringProp>
           </ConstantTimer>
           <hashTree/>
-          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="06.01 GetUpdates">
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="06.01 GetUpdates" enabled="true">
             <stringProp name="HTTPSampler.domain">trade-imports-data-api.perf-test.cdp-int.defra.cloud</stringProp>
             <stringProp name="HTTPSampler.protocol">https</stringProp>
             <stringProp name="HTTPSampler.path">/import-pre-notification-updates</stringProp>
@@ -3095,7 +3097,7 @@ vars.put(&apos;currentBcps&apos;, list.join(&apos;&amp;pointOfEntry=&apos;))
             </GaussianRandomTimer>
             <hashTree/>
           </hashTree>
-          <ForeachController guiclass="ForeachControlPanel" testclass="ForeachController" testname="ForEach Controller">
+          <ForeachController guiclass="ForeachControlPanel" testclass="ForeachController" testname="ForEach Controller" enabled="true">
             <stringProp name="ForeachController.inputVal">cheds</stringProp>
             <stringProp name="ForeachController.returnVal">currentChed</stringProp>
             <boolProp name="ForeachController.useSeparator">true</boolProp>
@@ -3103,7 +3105,7 @@ vars.put(&apos;currentBcps&apos;, list.join(&apos;&amp;pointOfEntry=&apos;))
             <stringProp name="ForeachController.endIndex">100</stringProp>
           </ForeachController>
           <hashTree>
-            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="06.02 GetChed">
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="06.02 GetChed" enabled="true">
               <stringProp name="HTTPSampler.domain">trade-imports-data-api.perf-test.cdp-int.defra.cloud</stringProp>
               <stringProp name="HTTPSampler.protocol">https</stringProp>
               <stringProp name="HTTPSampler.path">import-pre-notifications/${currentChed}</stringProp>
@@ -3173,7 +3175,7 @@ prev.setIgnore()</stringProp>
         </elementProp>
       </ThreadGroup>
       <hashTree>
-        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Force Stop After Timeout">
+        <JSR223Sampler guiclass="TestBeanGUI" testclass="JSR223Sampler" testname="Force Stop After Timeout" enabled="true">
           <stringProp name="TestPlan.comments">90 Mins Max</stringProp>
           <stringProp name="scriptLanguage">groovy</stringProp>
           <stringProp name="parameters"></stringProp>
