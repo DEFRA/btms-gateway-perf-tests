@@ -1429,7 +1429,7 @@ vars.put(&quot;referenceNumber&quot;, ref)</stringProp>
   },&#xd;
   &quot;actualCrossing&quot;: null,&#xd;
   &quot;Declarations&quot;: {&#xd;
-    &quot;transits&quot;: null,&#xd;
+    &quot;transits&quot;: [],&#xd;
     &quot;customs&quot;: [&#xd;
       {&#xd;
         &quot;id&quot;: &quot;${mrn}&quot;&#xd;
