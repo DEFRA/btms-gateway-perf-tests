@@ -21,7 +21,7 @@
         <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
       </ConfigTestElement>
       <hashTree/>
-      <SetupThreadGroup guiclass="SetupThreadGroupGui" testclass="SetupThreadGroup" testname="Setup">
+      <SetupThreadGroup guiclass="SetupThreadGroupGui" testclass="SetupThreadGroup" testname="Setup" enabled="true">
         <intProp name="ThreadGroup.num_threads">1</intProp>
         <intProp name="ThreadGroup.ramp_time">1</intProp>
         <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
@@ -260,7 +260,7 @@ SampleResult.setIgnore()
         </JSR223Sampler>
         <hashTree/>
       </hashTree>
-      <OpenModelThreadGroup guiclass="OpenModelThreadGroupGui" testclass="OpenModelThreadGroup" testname="CDS/ALVS">
+      <OpenModelThreadGroup guiclass="OpenModelThreadGroupGui" testclass="OpenModelThreadGroup" testname="CDS/ALVS" enabled="true">
         <stringProp name="TestPlan.comments">rate(60/min) even_arrivals(3 min) even_arrivals(1 min) rate(90/min) even_arrivals(3 min) even_arrivals(1 min) rate(120/min) even_arrivals(3 min) even_arrivals(1 min) rate(180/min) even_arrivals(3 min) even_arrivals(1 min) rate(240/min) even_arrivals(5 min) even_arrivals(1 min) rate(300/min) even_arrivals(5 min) even_arrivals(15 min)</stringProp>
         <stringProp name="OpenModelThreadGroup.schedule">rate(180/min) even_arrivals(15 min)</stringProp>
         <stringProp name="OpenModelThreadGroup.random_seed"> </stringProp>
@@ -268,7 +268,7 @@ SampleResult.setIgnore()
         <elementProp name="ThreadGroup.main_controller" elementType="OpenModelThreadGroupController"/>
       </OpenModelThreadGroup>
       <hashTree>
-        <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="00.00 - Basic Scenario">
+        <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="00.00 - Basic Scenario" enabled="true">
           <boolProp name="TransactionController.includeTimers">false</boolProp>
         </TransactionController>
         <hashTree>
@@ -280,7 +280,7 @@ SampleResult.setIgnore()
               <stringProp name="ConstantTimer.delay">10000</stringProp>
             </ConstantTimer>
             <hashTree/>
-            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="01.01. Send Notification">
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="01.01. Send Notification" enabled="true">
               <stringProp name="HTTPSampler.proxyScheme">https</stringProp>
               <stringProp name="HTTPSampler.proxyHost">${__P(https.proxyHost,)}</stringProp>
               <stringProp name="HTTPSampler.proxyPort">${__P(https.proxyPort,)}</stringProp>
@@ -739,7 +739,7 @@ prev.setSampleLabel(&apos;Send Notification: &apos; + vars.get(&apos;referenceNu
               </JSR223PostProcessor>
               <hashTree/>
             </hashTree>
-            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="01.02. Send Clearance Request">
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="01.02. Send Clearance Request" enabled="true">
               <stringProp name="HTTPSampler.domain">${__groovy(props.get(&apos;BtmsGateway__Host&apos;))}</stringProp>
               <stringProp name="HTTPSampler.protocol">https</stringProp>
               <stringProp name="HTTPSampler.path">/ITSW/CDS/SubmitImportDocumentCDSFacadeService</stringProp>
@@ -758,7 +758,7 @@ prev.setSampleLabel(&apos;Send Notification: &apos; + vars.get(&apos;referenceNu
               </elementProp>
             </HTTPSamplerProxy>
             <hashTree>
-              <JSR223PreProcessor guiclass="TestBeanGUI" testclass="JSR223PreProcessor" testname="Prepare SOAP body">
+              <JSR223PreProcessor guiclass="TestBeanGUI" testclass="JSR223PreProcessor" testname="Prepare SOAP body" enabled="true">
                 <stringProp name="scriptLanguage">groovy</stringProp>
                 <stringProp name="parameters"></stringProp>
                 <stringProp name="filename"></stringProp>
@@ -944,7 +944,7 @@ vars.put(&apos;soapBody&apos;, soapXml)
               </JSR223PostProcessor>
               <hashTree/>
             </hashTree>
-            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="01.03. Send Notification Update">
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="01.03. Send Notification Update" enabled="true">
               <stringProp name="HTTPSampler.proxyScheme">https</stringProp>
               <stringProp name="HTTPSampler.proxyHost">${__P(https.proxyHost,)}</stringProp>
               <stringProp name="HTTPSampler.proxyPort">${__P(https.proxyPort,)}</stringProp>
@@ -1386,7 +1386,7 @@ vars.put(&quot;referenceNumber&quot;, ref)</stringProp>
               </JSR223PostProcessor>
               <hashTree/>
             </hashTree>
-            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="01.04. Send GMR" enabled="true">
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="01.04. Send GMR">
               <stringProp name="HTTPSampler.proxyScheme">https</stringProp>
               <stringProp name="HTTPSampler.proxyHost">${__P(https.proxyHost,)}</stringProp>
               <stringProp name="HTTPSampler.proxyPort">${__P(https.proxyPort,)}</stringProp>
@@ -1432,7 +1432,7 @@ vars.put(&quot;referenceNumber&quot;, ref)</stringProp>
     &quot;Transits&quot;: null,&#xd;
     &quot;Customs&quot;: [&#xd;
       {&#xd;
-        &quot;Id&quot;: &quot;${mrn}}&quot;&#xd;
+        &quot;Id&quot;: &quot;${mrn}&quot;&#xd;
       }&#xd;
     ]&#xd;
   }&#xd;
@@ -1867,7 +1867,7 @@ SampleResult.setSuccessful(matched)
         </JSR223Sampler>
         <hashTree/>
       </hashTree>
-      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="UI">
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="UI" enabled="true">
         <intProp name="ThreadGroup.num_threads">140</intProp>
         <intProp name="ThreadGroup.ramp_time">60</intProp>
         <longProp name="ThreadGroup.duration">600</longProp>
@@ -2480,7 +2480,7 @@ if (cm == null) {
           </hashTree>
         </hashTree>
       </hashTree>
-      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="UI - Reporting">
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="UI - Reporting" enabled="true">
         <intProp name="ThreadGroup.num_threads">1</intProp>
         <longProp name="ThreadGroup.duration">800</longProp>
         <boolProp name="ThreadGroup.same_user_on_next_iteration">false</boolProp>
@@ -2977,7 +2977,7 @@ if (cm == null) {
           </hashTree>
         </hashTree>
       </hashTree>
-      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="PHA">
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="PHA" enabled="true">
         <intProp name="ThreadGroup.num_threads">30</intProp>
         <intProp name="ThreadGroup.ramp_time">60</intProp>
         <longProp name="ThreadGroup.duration">600</longProp>
@@ -3161,7 +3161,7 @@ prev.setIgnore()</stringProp>
           </hashTree>
         </hashTree>
       </hashTree>
-      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Watcher">
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="Watcher" enabled="true">
         <intProp name="ThreadGroup.num_threads">1</intProp>
         <intProp name="ThreadGroup.ramp_time">1</intProp>
         <longProp name="ThreadGroup.duration">1600</longProp>
