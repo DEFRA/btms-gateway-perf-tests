@@ -1428,7 +1428,7 @@ vars.put(&quot;referenceNumber&quot;, ref)</stringProp>
     &quot;localDateTimeOfArrival&quot;: &quot;2025-02-13T14:25&quot;&#xd;
   },&#xd;
   &quot;actualCrossing&quot;: null,&#xd;
-  &quot;Declarations&quot;: {&#xd;
+  &quot;declarations&quot;: {&#xd;
     &quot;transits&quot;: [],&#xd;
     &quot;customs&quot;: [&#xd;
       {&#xd;
