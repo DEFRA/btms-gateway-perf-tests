@@ -268,11 +268,11 @@ SampleResult.setIgnore()
         <elementProp name="ThreadGroup.main_controller" elementType="OpenModelThreadGroupController"/>
       </OpenModelThreadGroup>
       <hashTree>
-        <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="00.00 - Basic Scenario" enabled="true">
+        <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="00.00 - Basic Scenario">
           <boolProp name="TransactionController.includeTimers">false</boolProp>
         </TransactionController>
         <hashTree>
-          <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="01.00 Test" enabled="true">
+          <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="01.00 Test">
             <boolProp name="TransactionController.includeTimers">false</boolProp>
           </TransactionController>
           <hashTree>
@@ -1405,34 +1405,34 @@ vars.put(&quot;referenceNumber&quot;, ref)</stringProp>
                     <boolProp name="HTTPArgument.always_encode">false</boolProp>
                     <stringProp name="Argument.value">{&#xd;
   &quot;gmrId&quot;: &quot;${id}&quot;,&#xd;
-  &quot;HaulierEori&quot;: &quot;GB5380138094988&quot;,&#xd;
-  &quot;State&quot;: &quot;CHECKED_IN&quot;,&#xd;
-  &quot;InspectionRequired&quot;: null,&#xd;
-  &quot;ReportToLocations&quot;: null,&#xd;
-  &quot;UpdatedDateTime&quot;: &quot;2025-06-04T15:00:00.425Z&quot;,&#xd;
-  &quot;Direction&quot;: &quot;UK_INBOUND&quot;,&#xd;
-  &quot;HaulierType&quot;: &quot;RMG&quot;,&#xd;
-  &quot;IsUnaccompanied&quot;: true,&#xd;
-  &quot;VehicleRegNum&quot;: &quot;WICXEB&quot;,&#xd;
-  &quot;TrailerRegistrationNums&quot;: [&#xd;
+  &quot;haulierEORI&quot;: &quot;GB5380138094988&quot;,&#xd;
+  &quot;state&quot;: &quot;CHECKED_IN&quot;,&#xd;
+  &quot;inspectionRequired&quot;: null,&#xd;
+  &quot;reportToLocations&quot;: null,&#xd;
+  &quot;updatedDateTime&quot;: &quot;2025-06-04T15:00:00.425Z&quot;,&#xd;
+  &quot;direction&quot;: &quot;UK_INBOUND&quot;,&#xd;
+  &quot;haulierType&quot;: &quot;RMG&quot;,&#xd;
+  &quot;isUnaccompanied&quot;: true,&#xd;
+  &quot;vehicleRegNum&quot;: &quot;WICXEB&quot;,&#xd;
+  &quot;trailerRegistrationNums&quot;: [&#xd;
     &quot;IIWSI1&quot;,&#xd;
     &quot;YRSVQM&quot;&#xd;
   ],&#xd;
-  &quot;ContainerReferenceNums&quot;: null,&#xd;
-  &quot;PlannedCrossing&quot;: {&#xd;
-    &quot;RouteId&quot;: &quot;19&quot;,&#xd;
-    &quot;LocalDateTimeOfDeparture&quot;: &quot;2025-02-13T14:25&quot;&#xd;
+  &quot;containerReferenceNums&quot;: null,&#xd;
+  &quot;plannedCrossing&quot;: {&#xd;
+    &quot;routeId&quot;: &quot;19&quot;,&#xd;
+    &quot;localDateTimeOfDeparture&quot;: &quot;2025-02-13T14:25&quot;&#xd;
   },&#xd;
-  &quot;CheckedInCrossing&quot;: {&#xd;
-    &quot;RouteId&quot;: &quot;19&quot;,&#xd;
-    &quot;LocalDateTimeOfArrival&quot;: &quot;2025-02-13T14:25&quot;&#xd;
+  &quot;checkedInCrossing&quot;: {&#xd;
+    &quot;routeId&quot;: &quot;19&quot;,&#xd;
+    &quot;localDateTimeOfArrival&quot;: &quot;2025-02-13T14:25&quot;&#xd;
   },&#xd;
-  &quot;ActualCrossing&quot;: null,&#xd;
+  &quot;actualCrossing&quot;: null,&#xd;
   &quot;Declarations&quot;: {&#xd;
-    &quot;Transits&quot;: null,&#xd;
-    &quot;Customs&quot;: [&#xd;
+    &quot;transits&quot;: null,&#xd;
+    &quot;customs&quot;: [&#xd;
       {&#xd;
-        &quot;Id&quot;: &quot;${mrn}&quot;&#xd;
+        &quot;id&quot;: &quot;${mrn}&quot;&#xd;
       }&#xd;
     ]&#xd;
   }&#xd;
@@ -1472,15 +1472,15 @@ if (sampler instanceof HTTPSamplerBase) {
 </stringProp>
               </JSR223PreProcessor>
               <hashTree/>
-              <JSR223PreProcessor guiclass="TestBeanGUI" testclass="JSR223PreProcessor" testname="Generate random GMR data" enabled="true">
+              <JSR223PreProcessor guiclass="TestBeanGUI" testclass="JSR223PreProcessor" testname="Generate random GMR data">
                 <stringProp name="scriptLanguage">groovy</stringProp>
                 <stringProp name="parameters"></stringProp>
                 <stringProp name="filename"></stringProp>
                 <stringProp name="cacheKey">true</stringProp>
                 <stringProp name="script">def chars = (&apos;A&apos;..&apos;Z&apos;)  + (&apos;0&apos;..&apos;9&apos;)
-def suffix = (1..10).collect { chars[new Random().nextInt(chars.size())] }.join()
+def suffix = (1..8).collect { chars[new Random().nextInt(chars.size())] }.join()
 
-def id = &quot;GMR${suffix}&quot;
+def id = &quot;GMRA${suffix}&quot;
 
 //log.info(&quot;GMR id: &quot; + id)
 vars.put(&quot;id&quot;, id)</stringProp>
