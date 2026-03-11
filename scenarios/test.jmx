@@ -268,11 +268,11 @@ SampleResult.setIgnore()
         <elementProp name="ThreadGroup.main_controller" elementType="OpenModelThreadGroupController"/>
       </OpenModelThreadGroup>
       <hashTree>
-        <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="00.00 - Basic Scenario">
+        <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="00.00 - Basic Scenario" enabled="true">
           <boolProp name="TransactionController.includeTimers">false</boolProp>
         </TransactionController>
         <hashTree>
-          <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="01.00 Test">
+          <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="01.00 Test" enabled="true">
             <boolProp name="TransactionController.includeTimers">false</boolProp>
           </TransactionController>
           <hashTree>
@@ -1386,7 +1386,7 @@ vars.put(&quot;referenceNumber&quot;, ref)</stringProp>
               </JSR223PostProcessor>
               <hashTree/>
             </hashTree>
-            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="01.04. Send GMR">
+            <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="01.04. Send GMR" enabled="true">
               <stringProp name="HTTPSampler.proxyScheme">https</stringProp>
               <stringProp name="HTTPSampler.proxyHost">${__P(https.proxyHost,)}</stringProp>
               <stringProp name="HTTPSampler.proxyPort">${__P(https.proxyPort,)}</stringProp>
@@ -1472,7 +1472,7 @@ if (sampler instanceof HTTPSamplerBase) {
 </stringProp>
               </JSR223PreProcessor>
               <hashTree/>
-              <JSR223PreProcessor guiclass="TestBeanGUI" testclass="JSR223PreProcessor" testname="Generate random GMR data">
+              <JSR223PreProcessor guiclass="TestBeanGUI" testclass="JSR223PreProcessor" testname="Generate random GMR data" enabled="true">
                 <stringProp name="scriptLanguage">groovy</stringProp>
                 <stringProp name="parameters"></stringProp>
                 <stringProp name="filename"></stringProp>
@@ -2480,7 +2480,7 @@ if (cm == null) {
           </hashTree>
         </hashTree>
       </hashTree>
-      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="UI - Reporting" enabled="true">
+      <ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="UI - Reporting">
         <intProp name="ThreadGroup.num_threads">1</intProp>
         <longProp name="ThreadGroup.duration">800</longProp>
         <boolProp name="ThreadGroup.same_user_on_next_iteration">false</boolProp>
@@ -2603,16 +2603,16 @@ if (cm == null) {
             <hashTree/>
           </hashTree>
         </hashTree>
-        <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="07.00. Reporting - Large Range" enabled="true">
+        <TransactionController guiclass="TransactionControllerGui" testclass="TransactionController" testname="07.00. Reporting - Large Range">
           <boolProp name="TransactionController.parent">true</boolProp>
           <boolProp name="TransactionController.includeTimers">false</boolProp>
         </TransactionController>
         <hashTree>
-          <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Think Time" enabled="true">
+          <ConstantTimer guiclass="ConstantTimerGui" testclass="ConstantTimer" testname="Think Time">
             <stringProp name="ConstantTimer.delay">60000</stringProp>
           </ConstantTimer>
           <hashTree/>
-          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="07.01. View Report for past 3 months" enabled="true">
+          <HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="07.01. View Report for past 3 months">
             <stringProp name="HTTPSampler.domain">btms-portal-frontend.perf-test.cdp-int.defra.cloud</stringProp>
             <stringProp name="HTTPSampler.protocol">https</stringProp>
             <stringProp name="HTTPSampler.path">/reporting</stringProp>
@@ -2624,7 +2624,7 @@ if (cm == null) {
               <collectionProp name="Arguments.arguments">
                 <elementProp name="startDate" elementType="HTTPArgument">
                   <boolProp name="HTTPArgument.always_encode">true</boolProp>
-                  <stringProp name="Argument.value">${__timeShift(dd/MM/yyyy,${__time(dd/MM/yyyy)},-P110D,,)}</stringProp>
+                  <stringProp name="Argument.value">${__timeShift(dd/MM/yyyy,${__time(dd/MM/yyyy)},-P80D,,)}</stringProp>
                   <stringProp name="Argument.metadata">=</stringProp>
                   <boolProp name="HTTPArgument.use_equals">true</boolProp>
                   <stringProp name="Argument.name">startDate</stringProp>
@@ -2641,7 +2641,7 @@ if (cm == null) {
             <stringProp name="HTTPSampler.implementation">HttpClient4</stringProp>
           </HTTPSamplerProxy>
           <hashTree>
-            <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Response Code" enabled="true">
+            <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Response Code">
               <collectionProp name="Asserion.test_strings">
                 <stringProp name="49586">200</stringProp>
               </collectionProp>
@@ -2651,7 +2651,7 @@ if (cm == null) {
               <intProp name="Assertion.test_type">16</intProp>
             </ResponseAssertion>
             <hashTree/>
-            <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Correct Page" enabled="true">
+            <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="Correct Page">
               <collectionProp name="Asserion.test_strings">
                 <stringProp name="-1046009340">BTMS reporting data</stringProp>
               </collectionProp>
@@ -2661,7 +2661,7 @@ if (cm == null) {
               <intProp name="Assertion.test_type">16</intProp>
             </ResponseAssertion>
             <hashTree/>
-            <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="No Errors" enabled="true">
+            <ResponseAssertion guiclass="AssertionGui" testclass="ResponseAssertion" testname="No Errors">
               <collectionProp name="Asserion.test_strings">
                 <stringProp name="-546616634">There is a problem</stringProp>
               </collectionProp>
